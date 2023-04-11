@@ -1,0 +1,9 @@
+tox >= 3.23.0
+pygments >= 2.8.0
+jinja2 == 3.0.0
+babel >= 2.9.1
+sphinx >= 4.0.2
+pytest >= 6.0.0
+pytest-html >= 3.0.0
+setuptools >= 67.0.0
+
