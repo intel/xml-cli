@@ -21,3 +21,9 @@ python -m pip install <xmlcli-x.x.x.whl> --proxy <proxy-url>
 ```shell
 python -m pip install <repo-url> --proxy <proxy-url>
 ```
+
+## Method 4: Install via Git
+
+```shell
+python -m pip install git+https://github.com/intel/xml-cli
+```
