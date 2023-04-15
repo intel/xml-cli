@@ -4,10 +4,27 @@
 name: Python package
 
 on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      tags:
+        description: 'manual-trigger'
+        required: false
+        type: boolean
   push:
     branches: [ "*" ]
   pull_request:
     branches: [ "*" ]
+  schedule:
+  - cron: '45 23 * * 0'
 
 jobs:
   build:

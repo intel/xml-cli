@@ -9,6 +9,21 @@
 name: Upload Python Package
 
 on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      tags:
+        description: 'manual-trigger'
+        required: false
+        type: boolean
   release:
     types: [published]
 
