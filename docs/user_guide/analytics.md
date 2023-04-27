@@ -47,20 +47,20 @@ python analytics.py output_1.json output_2.json section EFI_SECTION_COMPRESSION
 Currently, the following file types and section types can be seen in the form of bar graph -
 
 ```python
-	python analytics.py output_1.json output_2.json filetype FV_FILETYPE_DRIVER
-    python analytics.py output_1.json output_2.json filetype FV_FILETYPE_APPLICATION
-    python analytics.py output_1.json output_2.json filetype FV_FILETYPE_FREEFORM
-    python analytics.py output_1.json output_2.json filetype FV_FILETYPE_PEIM
-    python analytics.py output_1.json output_2.json filetype FV_FILETYPE_SMM
-    python analytics.py output_1.json output_2.json filetype FV_FILETYPE_FIRMWARE_VOLUME_IMAGE
-    python analytics.py output_1.json output_2.json filetype FV_FILETYPE_RAW
+python analytics.py output_1.json output_2.json filetype FV_FILETYPE_DRIVER
+python analytics.py output_1.json output_2.json filetype FV_FILETYPE_APPLICATION
+python analytics.py output_1.json output_2.json filetype FV_FILETYPE_FREEFORM
+python analytics.py output_1.json output_2.json filetype FV_FILETYPE_PEIM
+python analytics.py output_1.json output_2.json filetype FV_FILETYPE_SMM
+python analytics.py output_1.json output_2.json filetype FV_FILETYPE_FIRMWARE_VOLUME_IMAGE
+python analytics.py output_1.json output_2.json filetype FV_FILETYPE_RAW
 	
-    python analytics.py output_1.json output_2.json section EFI_SECTION_COMPRESSION
-    python analytics.py output_1.json output_2.json section EFI_SECTION_FIRMWARE_VOLUME_IMAGE
-    python analytics.py output_1.json output_2.json section EFI_SECTION_PEI_DEPEX
-    python analytics.py output_1.json output_2.json section EFI_SECTION_DXE_DEPEX 
-    python analytics.py output_1.json output_2.json section EFI_SECTION_PE32
-    python analytics.py output_1.json output_2.json section EFI_SECTION_RAW
+python analytics.py output_1.json output_2.json section EFI_SECTION_COMPRESSION
+python analytics.py output_1.json output_2.json section EFI_SECTION_FIRMWARE_VOLUME_IMAGE
+python analytics.py output_1.json output_2.json section EFI_SECTION_PEI_DEPEX
+python analytics.py output_1.json output_2.json section EFI_SECTION_DXE_DEPEX 
+python analytics.py output_1.json output_2.json section EFI_SECTION_PE32
+python analytics.py output_1.json output_2.json section EFI_SECTION_RAW
 ```
 
 ![Alt text](bar_graph_raw_section.png?raw=true "bar graph showing raw section in 2 JSON files")
