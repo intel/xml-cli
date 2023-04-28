@@ -36,16 +36,20 @@ if uefi_parser.guid_to_store:
 
 # Built-in imports
 import os
+import sys
+import argparse
 import json
 import shutil
 from collections import namedtuple
 
+sys.path.append(".")
 # Custom imports
-from . import utils
-from . import compress
-from . import structure
-from . import logger
-from . import configurations
+import utils
+import compress
+import structure
+import logger
+import configurations
+import tree_and_node
 
 
 __version__ = "0.0.1"
@@ -114,6 +118,14 @@ class UefiParser(object):
       "16b45da2-7d70-4aea-a58d760e9ecb841d": FirmwareVolumeGuid("PFH1",         [0x16b45da2, 0x7d70, 0x4aea, 0xa5, 0x8d, 0x76, 0x0e, 0x9e, 0xcb, 0x84, 0x1d], self.parse_null, ""),
       "e360bdba-c3ce-46be-8f37b231e5cb9f35": FirmwareVolumeGuid("PFH2",         [0xe360bdba, 0xc3ce, 0x46be, 0x8f, 0x37, 0xb2, 0x31, 0xe5, 0xcb, 0x9f, 0x35], self.parse_null, ""),
     }
+
+    self.isffs = False
+    if os.path.splitext(bin_file)[1].lower() == '.ffs':
+      self.isffs = True
+    self.binary_tree = tree_and_node.TreeNode('ROOT')
+    self.binary_tree.Type = 'ROOT'
+    self.FvNum = 0
+    self.TargetFfsList = []
 
   def parse_null(self, *args, **kwargs):
     return {}
@@ -242,11 +254,14 @@ class UefiParser(object):
     bios_size = file_size - buffer_pointer
     log.result(f"Size of BIOS: {bios_size} bytes ({bios_size // 1024} KB)")
 
-    self.output.update(self.parse_firmware_volume(buffer, buffer_pointer, end_point=file_size, bin_dir=bin_dir))
+    if self.isffs:
+      self.output.update(self.parse_ffs(buffer, buffer_pointer, end_point=file_size, par_tree_node=self.binary_tree, is_root_level=True, nesting_level=0, is_compressed=False, bin_dir=bin_dir))
+    else:
+      self.output.update(self.parse_firmware_volume(buffer, buffer_pointer, end_point=file_size, par_tree_node=self.binary_tree, is_root_level=True, bin_dir=bin_dir))
     log.result(self.stored_guids)
     return self.output
 
-  def parse_firmware_volume(self, buffer, buffer_pointer, end_point, nesting_level=0, is_compressed=False, **kwargs):
+  def parse_firmware_volume(self, buffer, buffer_pointer, end_point, par_tree_node=None, nesting_level=0, is_compressed=False, is_root_level=False, **kwargs):
     """Parse the Firmware Volume(s) from given buffer
 
     :param buffer: Buffer to be read to parse firmware volume(s)
@@ -282,6 +297,13 @@ class UefiParser(object):
     firmware_volume_header = fv.read_from(buffer)  # read header structure from buffer
     log.debug("FV parsed...")
 
+    if (firmware_volume_header.HeaderLength - 56) // 8 != 1:
+      Map_Nums = (firmware_volume_header.HeaderLength - 56) // 8
+      newfv = structure.Refine_EfiFirmwareVolumeHeader(Map_Nums)
+      buffer.seek(buffer_pointer)  # seek to specified buffer pointer
+      firmware_volume_header = newfv.read_from(buffer)  # read header structure from buffer
+      log.debug("FV Header refined...")
+
     # construct Directory name to store file system of the current FV
     fv_dir = os.path.join(bin_dir, f"FV_0x{buffer_pointer:x}_to_0x{buffer_pointer + firmware_volume_header.FvLength:x}")
 
@@ -289,6 +311,7 @@ class UefiParser(object):
       key = f"0x{buffer_pointer:x}-{'FVI'}-0x{firmware_volume_header.FvLength:x}"  # construct key to store fv values
       result[key] = firmware_volume_header.dump_dict()  # store result of fv header data in the dictionary
       fv_guid = firmware_volume_header.FileSystemGuid.guid  # Get GUID of the FV
+      firmware_volume_extended_header = None
 
       if fv_guid in self.firmware_volume_guids:  # parse only valid FV GUIDs
         if firmware_volume_header.ExtHeaderOffset:  # recalculate fv header length if extended header offset
@@ -296,8 +319,8 @@ class UefiParser(object):
           # read extended header from buffer
           firmware_volume_extended_header = structure.EfiFirmwareVolumeExtHeader().read_from(buffer)
           # Override New Header Length
-          firmware_volume_header.HeaderLength = firmware_volume_header.ExtHeaderOffset + firmware_volume_extended_header.ExtHeaderSize
-          result[key]["HeaderLength"] = hex(firmware_volume_header.HeaderLength)  # Override Header Length in dictionary
+          NewHeaderLength = firmware_volume_header.ExtHeaderOffset + firmware_volume_extended_header.ExtHeaderSize
+          result[key]["HeaderLength"] = hex(NewHeaderLength)
           result[key]["FvNameGuid"] = firmware_volume_extended_header.FvName.guid  # add new unique fv guid key
           if self.guid_to_store:
             self.store_guid(dir_path=self.guid_store_dir,
@@ -315,7 +338,24 @@ class UefiParser(object):
         log.debug(f"Start: 0x{start:x}  | END: 0x{end:x} | BIN_FILE_SIZE: 0x{end_point:x}")
         # Parse the file system according to the
         data_or_code = self.firmware_volume_guids.get(fv_guid)  # get type of Filesystem by GUID
-        result[key][data_or_code.name] = data_or_code.method(buffer, start, end, nesting_level, is_compressed, bin_dir=fv_dir)
+        if not is_compressed and is_root_level:
+          Fv_TreeNode = tree_and_node.TreeNode(key)
+          Fv_TreeNode.Type = 'FV'
+          par_tree_node.InsertChildNode(Fv_TreeNode)
+          Fv_TreeNode.Data = tree_and_node.FvNode()
+          Fv_TreeNode.Data.Name = 'FV{}'.format(self.FvNum)
+          self.FvNum += 1
+          Fv_TreeNode.Data.IsValid = True
+          Fv_TreeNode.Data.Header = firmware_volume_header
+          Fv_TreeNode.Data.ExtHeader = firmware_volume_extended_header
+          Fv_TreeNode.Data.InitExtEntry(buffer, buffer_pointer)
+          buffer.seek(start)
+          Fv_TreeNode.Data.Data = buffer.read(end-start)
+          buffer.seek(start)
+          Fv_TreeNode.Data.Info = data_or_code
+          result[key][data_or_code.name] = data_or_code.method(buffer, start, end, nesting_level, is_compressed, Fv_TreeNode, is_root_level, bin_dir=fv_dir)
+        else:
+          result[key][data_or_code.name] = data_or_code.method(buffer, start, end, nesting_level, is_compressed, bin_dir=fv_dir)
       else:
         # GUID is invalid or GUID for this parsing method not implemented yet
         err_msg = f"Parsing firmware volume for GUID: {fv_guid} is not implemented"
@@ -336,15 +376,27 @@ class UefiParser(object):
         else:
           break
       key = f"0x{invalid_fv_start:x}-{'InvalidFVI'}-0x{buffer_pointer - invalid_fv_start:x}"  # construct key to store fv values
+      if not is_compressed and is_root_level:
+        Fv_TreeNode = tree_and_node.TreeNode(key)
+        Fv_TreeNode.Type = 'FV'
+        par_tree_node.InsertChildNode(Fv_TreeNode)
+        Fv_TreeNode.Data = tree_and_node.FvNode()
+        Fv_TreeNode.Data.Name = 'FV{}'.format(self.FvNum)
+        self.FvNum += 1
+        Fv_TreeNode.Data.IsValid = False
+        Fv_TreeNode.Data.Header = firmware_volume_header
+        buffer.seek(invalid_fv_start)
+        Fv_TreeNode.Data.Data = buffer.read(buffer_pointer - invalid_fv_start)
+        buffer.seek(invalid_fv_start)
       result[key] = fv.dump_dict()
       log.debug(f"Invalid Signature of FV from 0x{invalid_fv_start:x} to: 0x{buffer_pointer:x}")
     if not is_sub_fv:
       if buffer_pointer == 0x2612000:
         pass
-      self.output.update(self.parse_firmware_volume(buffer, buffer_pointer, end_point=end_point, nesting_level=nesting_level, is_compressed=is_compressed))
+      self.output.update(self.parse_firmware_volume(buffer, buffer_pointer, end_point=end_point, nesting_level=nesting_level, is_compressed=is_compressed, par_tree_node=par_tree_node, is_root_level=is_root_level))
     return result
 
-  def parse_ffs(self, buffer, buffer_pointer, end_point, nesting_level, is_compressed, **kwargs):
+  def parse_ffs(self, buffer, buffer_pointer, end_point, nesting_level, is_compressed, par_tree_node=None, is_root_level=False, **kwargs):
     """Parse File System of type FFS1, FFS2, FFS3
 
     :param buffer: buffer from where filesystem to be parsed
@@ -391,6 +443,25 @@ class UefiParser(object):
 
       start = align_buffer + ffs_data.cls_size  # calculate start pointer of ffs data (first section)
       end = align_buffer + ffs_data.size  # calculate location of next ffs
+      if not is_compressed and is_root_level:
+        Ffs_TreeNode = tree_and_node.TreeNode(key)
+        Ffs_TreeNode.Type = 'FFS'
+        par_tree_node.InsertChildNode(Ffs_TreeNode)
+        Ffs_TreeNode.Data = tree_and_node.FfsNode()
+        Ffs_TreeNode.Data.Header = ffs_data
+        Ffs_TreeNode.Data.Name = Ffs_TreeNode.Data.Header.Name
+        Ffs_TreeNode.Data.FfsType = ffs_type
+        if structure.struct2stream(Ffs_TreeNode.Data.Header).replace(b'\xff', b'') == b'':
+          Ffs_TreeNode.Type = 'FFS_FREE_SPACE'
+          buffer.seek(align_buffer)
+          Ffs_TreeNode.Data.Data = buffer.read(end_point - align_buffer)
+          buffer.seek(align_buffer)
+          par_tree_node.Data.Free_Space = end_point - align_buffer
+        else:
+          buffer.seek(start)
+          Ffs_TreeNode.Data.Data = buffer.read(end - start)
+          buffer.seek(start)
+          Ffs_TreeNode.Data.PadData = structure.get_pad_size(len(Ffs_TreeNode.Data.Data), structure.FFS_ALIGNMENT) * b'\xff'
       if self.guid_to_store:
         self.store_guid(dir_path=self.guid_store_dir,
                         buffer=buffer,
@@ -486,6 +557,7 @@ class UefiParser(object):
                                                            end_point=end,
                                                            nesting_level=nesting_level,
                                                            is_compressed=is_compressed,
+                                                           is_root_level=False,
                                                            bin_dir=section_dir)
             if utils.SORT_FV:
               result[key]["FV"] = self.sort_output_fv(result[key]["FV"])
@@ -688,6 +760,154 @@ class UefiParser(object):
     log.info(f"File successfully stored at: {os.path.abspath(file_path)}")
     return True
 
+  def find_ffs_node(self, TargetFfsGuid):
+    self.binary_tree.FindNode(TargetFfsGuid, self.TargetFfsList)
+
+  def dump_binary(self, outputfile_path):
+    with open(outputfile_path, 'wb') as outputfile:
+      outputfile.write(self.binary_tree.WholeTreeData)
+
+  def Encapsulate_binary(self, BinaryTree):
+    if BinaryTree.Type == 'ROOT':
+      log.info('Encapsulating ROOT node!')
+    elif BinaryTree.Type == 'FV':
+      log.info('Encapsulation FV Node!')
+      if BinaryTree.Data.IsValid:
+        if BinaryTree.HasChild():
+          self.binary_tree.WholeTreeData += structure.struct2stream(BinaryTree.Data.Header)
+        else:
+          self.binary_tree.WholeTreeData += structure.struct2stream(BinaryTree.Data.Header) + BinaryTree.Data.Data
+      else:
+        self.binary_tree.WholeTreeData += BinaryTree.Data.Data
+    elif BinaryTree.Type == 'FFS':
+      log.info(f"Encapsulation Ffs Node: {BinaryTree.Data.Header.Name}!")
+      if BinaryTree.Position.ParentNode.Type != 'ROOT':
+        self.binary_tree.WholeTreeData += structure.struct2stream(BinaryTree.Data.Header) + BinaryTree.Data.Data + BinaryTree.Data.PadData
+      else:
+        self.binary_tree.WholeTreeData += structure.struct2stream(BinaryTree.Data.Header) + BinaryTree.Data.Data
+    elif BinaryTree.Type == 'FFS_FREE_SPACE':
+      self.binary_tree.WholeTreeData += BinaryTree.Data.Data
+    for Child in BinaryTree.Position.ChildNodeList:
+      self.Encapsulate_binary(Child)
+
+  def ModifyFvExtData(self, TargetFv):
+    FvExtData = b''
+    if TargetFv.Data.Header.ExtHeaderOffset:
+      FvExtHeader = structure.struct2stream(TargetFv.Data.ExtHeader)
+      FvExtData += FvExtHeader
+    if TargetFv.Data.Header.ExtHeaderOffset and TargetFv.Data.ExtEntryExist:
+      FvExtEntry = structure.struct2stream(TargetFv.Data.ExtEntry)
+      FvExtData += FvExtEntry
+    if FvExtData:
+      InfoNode = TargetFv.Position.ChildNodeList[0]
+      InfoNode.Data.Data = FvExtData + InfoNode.Data.Data[TargetFv.Data.ExtHeader.ExtHeaderSize:]
+      InfoNode.Data.ModCheckSum()
+
+  def UpdateFvData(self, TargetFv):
+    TargetFv.Data.Data = b''
+    for item in TargetFv.Position.ChildNodeList:
+      if item.Type == 'FFS_FREE_SPACE':
+        TargetFv.Data.Data += item.Data.Data
+      else:
+        TargetFv.Data.Data += structure.struct2stream(item.Data.Header)+ item.Data.Data + item.Data.PadData
+
+  def UpdateFvHeader(self, TargetFv):
+    TargetFv.Data.ModFvExt()
+    TargetFv.Data.ModFvSize()
+    TargetFv.Data.ModExtHeaderData()
+    self.ModifyFvExtData(TargetFv)
+    TargetFv.Data.ModCheckSum()
+
+  def ReplaceFfs(self, NewFfs, TargetFfs):
+    TargetFv = TargetFfs.Position.ParentNode
+    TargetIndex = TargetFv.Position.ChildNodeList.index(TargetFfs)
+    FinalFfs = TargetFv.Position.ChildNodeList[-1]
+
+    if TargetFv.Data.Header.Attributes & structure.EFI_FVB2_ERASE_POLARITY:
+      NewFfs.Data.Header.State = structure.ctypes.c_uint8(~NewFfs.Data.Header.State)
+
+    if len(NewFfs.Data.Data) + len(NewFfs.Data.PadData) <= len(TargetFfs.Data.Data) + len(TargetFfs.Data.PadData):
+      Released_Space = len(TargetFfs.Data.Data) + len(TargetFfs.Data.PadData) - len(NewFfs.Data.Data) - len(NewFfs.Data.PadData)
+      if FinalFfs.Type == 'FFS_FREE_SPACE':
+        TargetFv.InsertChildNode(NewFfs, TargetIndex)
+        TargetFv.RemoveChildNode(TargetFfs)
+        FinalFfs.Data.Data += Released_Space * b'\xff'
+        TargetFv.Data.Free_Space = len(FinalFfs.Data.Data)
+      elif FinalFfs.Type == 'FFS':
+        NewFinalFfs = tree_and_node.TreeNode('FFS_FREE_SPACE')
+        NewFinalFfs.Type = 'FFS_FREE_SPACE'
+        NewFinalFfs.Data = tree_and_node.FfsNode()
+        NewFinalFfs.Data.Name = b'\xff' * 16
+        NewFinalFfs.Data.Data = Released_Space * b'\xff'
+        TargetFv.Data.Free_Space = len(NewFinalFfs.Data.Data)
+        TargetFv.InsertChildNode(NewFfs, TargetIndex)
+        TargetFv.RemoveChildNode(TargetFfs)
+        TargetFv.InsertChildNode(NewFinalFfs)
+    elif len(NewFfs.Data.Data) + len(NewFfs.Data.PadData) > len(TargetFfs.Data.Data) + len(TargetFfs.Data.PadData):
+      Needed_Space = len(NewFfs.Data.Data) + len(NewFfs.Data.PadData) - len(TargetFfs.Data.Data) - len(TargetFfs.Data.PadData)
+      if FinalFfs.Type == 'FFS':
+        log.error('The FV does not have enough space to replace the ffs file!')
+        raise MemoryError
+      elif FinalFfs.Type == 'FFS_FREE_SPACE':
+        if Needed_Space > len(FinalFfs.Data.Data) + len(FinalFfs.Data.PadData):
+          log.error('The FV does not have enough space to replace the ffs file!')
+          raise MemoryError
+        elif Needed_Space == len(FinalFfs.Data.Data) + len(FinalFfs.Data.PadData):
+          TargetFv.InsertChildNode(NewFfs, TargetIndex)
+          TargetFv.RemoveChildNode(TargetFfs)
+          TargetFv.RemoveChildNode(FinalFfs)
+          TargetFv.Data.Free_Space = 0
+        else:
+          FinalFfs.Data.Data = (len(FinalFfs.Data.Data) - Needed_Space) * b'\xff'
+          TargetFv.Data.Free_Space = len(FinalFfs.Data.Data)
+          TargetFv.InsertChildNode(NewFfs, TargetIndex)
+          TargetFv.RemoveChildNode(TargetFfs)
+    self.UpdateFvHeader(TargetFv)
+    self.UpdateFvData(TargetFv)
+
+parser = argparse.ArgumentParser(description='''
+Bios firmware Parser.
+''')
+parser.add_argument("-r", "--Replace", dest="Replace", nargs='+',
+                    help="Replace a Ffs in a FV: '-r bios_image.bin driver_image.ffs replaced_image.bin")
 
 if __name__ == "__main__":
   print("Please run test suite for the testing")
+  bios_image = 'bios_image.bin'
+  driver_image = 'driver_image.ffs'
+  replaced_image = 'replaced_image.bin'
+
+  args=parser.parse_args()
+  if args.Replace:
+    bios_image = args.Replace[0]
+    driver_image = args.Replace[1]
+    replaced_image = args.Replace[2]
+
+  logger.log.info(f"{'=' * 50}\n>>>>>>>>> REPLACING DRIVER: {driver_image} <<<<<<<<<\n{'=' * 50}")
+  uefi_parser = UefiParser(bin_file=bios_image,  # binary file to parse
+                              parsing_level=0,  # parsing level to manage number of parsing features
+                              base_address=0,  # (optional) provide base address of bios FV region to start the parsing (default 0x0)
+                              guid_to_store=[]  # if provided the guid for parsing then parser will look for every GUID in the bios image
+                              )
+
+  newffs_parser = UefiParser(bin_file=driver_image,  # binary file to parse
+                                  parsing_level=0,  # parsing level to manage number of parsing features
+                                  base_address=0,  # (optional) provide base address of bios FV region to start the parsing (default 0x0)
+                                  guid_to_store=[]  # if provided the guid for parsing then parser will look for every GUID in the bios image
+                                  )
+
+  # parse bios image into a binary_tree
+  bios_output_dict = uefi_parser.parse_binary()
+
+  # parse driver ffs image into a binary tree node
+  ffs_output_dict = newffs_parser.parse_binary()
+  # get the target ffs guid through ffs file, extract the target tree node
+  TargetFfsGuid = newffs_parser.binary_tree.Position.ChildNodeList[0].Data.Name
+  newffsnode = newffs_parser.binary_tree.Position.ChildNodeList[0]
+
+  # replace the target ffs with new one
+  uefi_parser.find_ffs_node(TargetFfsGuid)
+  uefi_parser.ReplaceFfs(newffsnode, uefi_parser.TargetFfsList[0])
+  uefi_parser.binary_tree.WholeTreeData = b''
+  uefi_parser.Encapsulate_binary(uefi_parser.binary_tree)
+  uefi_parser.dump_binary(replaced_image)
