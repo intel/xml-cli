@@ -11,7 +11,9 @@ warnings.simplefilter("ignore", ResourceWarning)
 
 # Custom imports
 from .UnitTestHelper import *
+from xmlcli.UefiFwParser import ProcessBin, PrintLogFile
 from xmlcli.common import utils
+from xmlcli.common import structure
 from xmlcli.common import bios_fw_parser
 from xmlcli.common import configurations
 
@@ -25,7 +27,7 @@ LOG_LEVEL = "DEBUG"  # options for LOG_LEVEL = DEBUG|INFO|ERROR|WARN
 class UtilityTest(UnitTestHelper):
   def test_guid_structure_read(self):
     guid = "0x92daaf2f-0xc02b-0x455b-0xb2-0xec-0xf5-0xa3-0x59-0x4f-0x4a-0xea"
-    guid_struct = utils.Guid()
+    guid_struct = structure.Guid()
     guid_struct.read_guid(guid)
     self.assertEqual(utils.guid_formatter(guid_struct.guid, string_format="xmlcli"), guid)
 
@@ -69,6 +71,11 @@ class UefiParserTest(UnitTestHelper):
   def bios_roms(self):
     bios_rom_location = self.bios_image_dir
     bios_roms = [os.path.join(bios_rom_location, bios_image) for bios_image in os.listdir(bios_rom_location) if self.is_valid_bios_image(bios_image)]
+    stored_dump = self.get_online_bios_image
+    if ONLINE_MODE and stored_dump:
+      online_bios_image = os.path.join(bios_rom_location, "online_bios.bin")
+      shutil.copy(stored_dump, online_bios_image)
+      bios_roms = [online_bios_image] + bios_roms
     return bios_roms
 
   @property
@@ -126,6 +133,27 @@ class UefiParserTest(UnitTestHelper):
       uefi_parser.write_result_to_file(user_guid_out_file, output_dict=uefi_parser.stored_guids)
       # Validate whether content written in json or not
       self.assertGreater(os.path.getsize(user_guid_out_file), 0)
+
+  def test_compare_with_old(self):
+    for bios_image in self.bios_roms:
+      with open(bios_image, 'rb') as BiosBinFile:
+        BiosBinListBuff = list(BiosBinFile.read())
+      BiosEnd = len(BiosBinListBuff)
+      with open(PrintLogFile, "w") as LogFile:
+        ProcessBin(BiosBinListBuff=BiosBinListBuff, BiosFvBase=0x00, Files2saveGuidList=self.lookup_guids, LogFile=LogFile, BiosRegionEnd=BiosEnd)
+
+
+class OnlineTest(UefiParserTest):
+  @property
+  def bios_roms(self):
+    bios_rom_location = self.bios_image_dir
+    stored_dump = self.get_online_bios_image
+    bios_roms = []
+    if stored_dump:
+      online_bios_image = os.path.join(bios_rom_location, "online_bios.bin")
+      shutil.copy(stored_dump, online_bios_image)
+      bios_roms = [online_bios_image]
+    return bios_roms
 
 
 class OfflineTest(UefiParserTest):

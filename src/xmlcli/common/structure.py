@@ -11,7 +11,6 @@ try:
   from ..restricted.structure_restricted import *
 except ModuleNotFoundError as e:
   DescriptorRegion = None
-  log.warn("You are working with limited set of feature which are not available with this version of XmlCli")
 
 
 __version__ = "0.0.1"

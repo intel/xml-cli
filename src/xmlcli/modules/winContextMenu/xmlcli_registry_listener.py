@@ -37,6 +37,7 @@ class RegistryListener(object):
       # raise utils.XmlCliException("Unsafe file path used...")
     self.command_method_map = OrderedDict({
       "all"         : CMD_MAP("all", self.command_all, "Run All"),
+      "savexml"     : CMD_MAP("savexml", self.command_savexml, "Save XML"),
       "generatejson": CMD_MAP("generatejson", self.command_generate_json, "Parse firmware as json"),
       "shell"       : CMD_MAP("shell", self.command_launch_shell, "Launch Shell"),
     })
@@ -97,6 +98,15 @@ class RegistryListener(object):
     output = uefi_parser.sort_output_fv(output)
     output_json_file = os.path.join(self.output_directory, "{}.json".format(self.binary_file_name))
     uefi_parser.write_result_to_file(output_json_file, output_dict=output)
+
+  def command_savexml(self):
+    output_xml_file = os.path.join(self.output_directory, "{}.xml".format(self.binary_file_name))
+
+    if self.interface == "stub":
+      self.cli.savexml(output_xml_file, self.binary_file_path)
+    else:
+      self.cli.clb._setCliAccess(self.interface)
+      self.cli.savexml(output_xml_file)
 
   def command_launch_shell(self):
     import subprocess
