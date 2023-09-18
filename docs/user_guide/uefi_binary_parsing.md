@@ -6,6 +6,17 @@ Key features:
 -   JSON representation, lightweight database with keys and values with ease of readability
 -   Works with both SUT and offline image
 
+Working with SUT:
+
+Below command to be executed only after enabling applicable access method:
+
+```python
+from xmlcli import XmlCli as cli
+
+max_bios_size = 12 * (1024**2)  # 12 MB - configure based on the platform used
+# If max_bios_size argument is not specified then by default it uses 32 MB dump to lookup for BIOS image
+bios_image = cli.clb.get_bin_file("linux", max_bios_size=max_bios_size)  # variable will have location of bios image dump stored from memory
+```
 
 Initiate the Parsing with below commands:
 
