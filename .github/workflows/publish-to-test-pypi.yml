@@ -35,8 +35,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: abatilo/actions-poetry@v2.1.6
-        with:
-          poetry-version: 1.6.0
+      with:
+        poetry-version: 1.6.0
     - name: Publish distribution 📦 to Test PyPI
       run: >-
         poetry config repositories.testpypi https://test.pypi.org/legacy/
