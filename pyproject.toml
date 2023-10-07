@@ -23,7 +23,7 @@ classifiers = [
 packages = [{include = "xmlcli", from = "src"}]
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.8.1"
 defusedxml = ">=0.6.0"
 
 [tool.poetry.dev-dependencies]
