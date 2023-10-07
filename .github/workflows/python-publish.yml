@@ -38,7 +38,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: abatilo/actions-poetry@v2
       with:
-        poetry-version: 1.6.0
+        poetry-version: 1.4.0
     - name: Publish distribution 📦 to PyPI
       run: >-
         poetry publish --build -u __token__ -p ${{ secrets.TEST_PYPI_API_TOKEN }}
