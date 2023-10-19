@@ -54,3 +54,4 @@ ignore = "E501"
 indent-size = 2
 
 [tool.poetry.scripts]
+xmlcli = { reference = "xmlcli.start_xmlcli:cli", type = "console" }
