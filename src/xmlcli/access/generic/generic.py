@@ -12,10 +12,12 @@ from ..base import base
 
 __all__ = ["CommonCliAccess"]
 
+MAX_READ_SIZE = 0x400
+
 
 class CommonCliAccess(base.BaseAccess):
   def __init__(self, access_name, child_class_directory):
-    super(CommonCliAccess, self).__init__(access_name, child_class_directory=child_class_directory)
+    super(CommonCliAccess).__init__(access_name, child_class_directory=child_class_directory)
     self.level_dal = 0
     self.is_running = 0x00  # initialize IsRunning [bitmap] global variable to False for all bits
     self.thread = None
@@ -87,7 +89,7 @@ class CommonCliAccess(base.BaseAccess):
     # Due to a bug in IPC (Lauterbach) relative path names do not resolve correctly. To adjust for this, all files must be absolute
     if not os.path.isabs(filename):
       filename = os.path.abspath(filename)
-    self.thread.memsave(filename, hex(address).rstrip('L')+'p', size, 1)
+    self.thread.mem_save(filename, hex(address).rstrip('L')+'p', size, 1)
 
   def mem_read(self, address, size):
     return self.thread.mem(hex(address).rstrip('L') + 'p', size)
@@ -102,8 +104,6 @@ class CommonCliAccess(base.BaseAccess):
     self.thread.memload(filename, hex(address).rstrip('L') + 'p')
 
   def read_io(self, address, size):
-    if size not in (1, 2, 4):
-      raise base.CliOperationException(f"Invalid size to read from io port address: 0x{address:x}")
     if size == 1:
       return self.thread.port(address)
     if size == 2:
@@ -112,8 +112,6 @@ class CommonCliAccess(base.BaseAccess):
       return self.thread.dport(address)
 
   def write_io(self, address, size, value):
-    if size not in (1, 2, 4):
-      raise base.CliOperationException(f"Invalid size to write from io port address: 0x{address:x}")
     if size == 1:
       self.thread.port(address, value)
     if size == 2:

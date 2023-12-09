@@ -12,6 +12,12 @@ from . import XmlIniParser as prs
 from . import UefiFwParser as fwp
 from .common.uefi_nvar import get_set_var
 
+try:
+  from .restricted.xmlcli_restricted import *
+  from .restricted.acm_patching import *
+except ModuleNotFoundError as e:
+  log.warn("You are working with limited set of feature which are not available with this version of XmlCli")
+
 if not configurations.PERFORMANCE:
   # Optional helper utilities
   from .modules import helpers

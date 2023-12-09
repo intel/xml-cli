@@ -189,17 +189,17 @@ class Setup(object):
     logger = logging.getLogger(title)  # create logger with given title
     logger.setLevel(min(mode, console_log_level))  # set log level
     # configure basic logging configurations
-    if print_on_console and not (any([isinstance(i, logging.StreamHandler) for i in logger.handlers])):
-      handler = self.get_console_handler(console_log_level, console_log_format)
-      # add the handlers to the logger
-      logger.addHandler(handler)
-
     if write_in_file:
       log_file_name = kwargs.get("log_file_name", self.log_file_name)
       file_handler = self.get_file_handler(log_file_name, mode, log_format)
       # add the handlers to the logger
       if file_handler not in logger.handlers:
         logger.addHandler(file_handler)
+
+    if print_on_console:
+      handler = self.get_console_handler(console_log_level, console_log_format)
+      # add the handlers to the logger
+      logger.addHandler(handler)
     return True
 
   def get_console_handler(self, log_level=None, log_format=None):
@@ -240,7 +240,7 @@ class Setup(object):
     logger.setLevel(self.log_level)
     # add the handlers to the logger
     console_handler = self.get_console_handler()
-    if console_handler not in logger.handlers and not (any([isinstance(i, logging.StreamHandler) for i in logger.handlers])):
+    if console_handler not in logger.handlers:
       logger.addHandler(console_handler)
     if file_name:
       file_handler = self.get_file_handler(self.log_file_name)

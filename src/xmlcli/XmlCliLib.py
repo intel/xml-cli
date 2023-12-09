@@ -210,6 +210,10 @@ class CliLib(object):
 
 def is_exe_available(interface_type):
   status = True
+  # XmlCli: RestrictedBegin
+  if InterfaceType not in ("baseipc", "ipc", "dci", "ltb", "itpii", "itpsimics", "winrwe", "svos", "tssa"):
+    return False
+  # XmlCli: RestrictedEnd
   return status
 
 

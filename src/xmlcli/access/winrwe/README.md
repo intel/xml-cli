@@ -6,7 +6,7 @@ Prerequisites:
 - Download Portable version of RWEverything compatible to your system from [http://rweverything.com/download/](http://rweverything.com/download/):
 
 | Description   | Details                |
-|---------------|------------------------|
+| ------------- | ---------------------- |
 | Access Method | `winrwe`               |
 | Folder Name   | `winrwe`               |
 | Configuration | `winrwe/winrwe.ini`    |

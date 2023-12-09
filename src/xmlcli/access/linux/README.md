@@ -5,7 +5,7 @@ Prerequisites would be that OS should expose below files for `root` user (sudoer
 - `/dev/mem` to allow reading physical memory
 
 | Description   | Details              |
-|---------------|----------------------|
+| ------------- | -------------------- |
 | Access Method | `linux`              |
 | Folder Name   | `linux`              |
 | Configuration | `linux/linux.ini`    |
