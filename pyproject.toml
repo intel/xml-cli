@@ -1,0 +1,57 @@
+[tool.poetry]
+name = "xmlcli"
+version = "2.0.2"
+description = "UFFAF - UEFI Firmware Foundational Automation Framework (formerly Xml-Cli)"
+authors = ["Gahan Saraya <gahan.saraiya@intel.com>"]
+maintainers = ["Intel <xmlcli@intel.com>"]
+license = "BSD 3-Clause License"
+readme = "README.md"
+homepage = "https://github.com/intel/xml-cli"
+keywords = ["uffaf", "xmlcli", "xml-cli", "framework", "automation", "validation", "bios", "xml"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: BSD License",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+packages = [{include = "xmlcli", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.8.1"
+defusedxml = ">=0.6.0"
+
+[tool.poetry.dev-dependencies]
+tox = ">=3.23.0"
+pygments = ">=2.8.0"
+jinja2 = "^3.0.0"
+babel = ">=2.9.1"
+sphinx = ">=4.0.2"
+pytest = ">=7.4.3"
+pytest-html = ">=4.1.0"
+flake8 = ">=6.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.flake8]
+exclude = [
+    ".git",
+    "__pycache__",
+    "docs/source/conf.py",
+    "old",
+    "build",
+    "dist",
+    "out"
+]
+ignore = "E501"
+indent-size = 2
+
+[tool.poetry.scripts]
+xmlcli = { reference = "xmlcli.start_xmlcli:cli", type = "console" }
