@@ -243,4 +243,5 @@ These modules are extension of core XmlCli API also shows example of how it can 
 | [Context Menu for Windows OS](src/xmlcli/modules/winContextMenu/README.md) | Installing context menu in windows OS for frequently used APIs |
 | [UEFI Binary Parsing](docs/user_guide/uefi_binary_parsing.md)              | Parsing UEFI BIOS Binary file as json information, extracting firmware volumes, ffs etc. |
 | [Customizing Logging](docs/user_guide/log_configuration.md)                | Instruction guide on customizing logging |
+| [Data analysis of 2 JSON outputs] (docs/user_guide/analytics.md)           | Instructions on performing binary data analysis |
 
