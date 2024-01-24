@@ -7,7 +7,7 @@ MAJOR = 2
 # MINOR ------------
 MINOR = 0
 # BUILD ------
-BUILD = 2  # or __revision__
+BUILD = 3  # or __revision__
 # TAG -------
 TAG = ""
 __version__ = LooseVersion("{major}.{minor}.{build}{tag}".format(
