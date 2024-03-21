@@ -637,6 +637,8 @@ class StructureHelper(ctypes.Structure):
       val = [f"{_val:0>2x}" if is_integer(_val) else _val.dump_dict() for _idx, _val in enumerate(list(val))]
       if flag:
         val = hex(int("".join(val[::-1]), 16))
+    else:
+      return ""
     return val
 
   def get_value(self, name):
