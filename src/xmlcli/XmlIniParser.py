@@ -387,7 +387,7 @@ def generate_csv(xml_file, por_default_review=False):
   csv_file = os.path.join(clb.TempFolder, csv_file_name)
   with open(csv_file, 'w') as file_ptr:
     log.info(f'writing to file : {csv_file}')
-    file_ptr.write(csv_file)
+    file_ptr.write(csv_data)
   log.info('Csv File generated !')
 
 
