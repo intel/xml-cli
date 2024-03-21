@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xmlcli"
-version = "2.0.2"
+version = "2.0.5"
 description = "UFFAF - UEFI Firmware Foundational Automation Framework (formerly Xml-Cli)"
 authors = ["Gahan Saraya <gahan.saraiya@intel.com>"]
 maintainers = ["Intel <xmlcli@intel.com>"]

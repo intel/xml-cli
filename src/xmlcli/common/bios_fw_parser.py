@@ -61,6 +61,8 @@ for handler in log.handlers:
 
 FirmwareVolumeGuid = namedtuple("FirmwareVolumeGuid", ["name", "guid", "method", "description"])
 
+RAW_SECTION_EFI_INITIAL_OFFSET = 0x26
+
 
 class UefiParser(object):
   """
@@ -80,7 +82,11 @@ class UefiParser(object):
     self.parsing_level = utils.PARSING_LEVEL_MAP.get(parsing_level, utils.PARSING_LEVEL_MAP.get(0))
     self.user_specified_base_address = kwargs.get("base_address", None)
     self.guid_to_store = kwargs.get("guid_to_store", [])  # if passed guid_to_store, list of guid then store the respective binary by guid
+    if self.guid_to_store:
+      self.guid_to_store = [utils.guid_formatter(guid) for guid in self.guid_to_store]
     log.info(f"GUID bins to store: {self.guid_to_store}")
+    self.parse_efi_variable = kwargs.get("parse_efi_variable", True)
+    self.efi_variables = {}  # this data would be populated if parse_efi_variable set to `True`.
     # reformat guids to specific format
     self.stored_guids = {utils.guid_formatter(guid): [] for guid in self.guid_to_store}
     log.debug(self.stored_guids)
@@ -465,6 +471,10 @@ class UefiParser(object):
         end = align_buffer + section.get_section_size()  # calculate end of the section buffer
         # create name for section directory to store data/code parsed within it
         section_dir = os.path.join(bin_dir, f"SECTION_0x{align_buffer:x}_to_0x{end:x}")
+        if ffs_guid in self.guid_to_store and section_tuple.name == "EFI_SECTION_RAW":
+          self.parse_efi_variable_data(buffer, buffer_pointer=buffer_pointer + RAW_SECTION_EFI_INITIAL_OFFSET,
+                                       end_point=end)
+          print(self.efi_variables)
         if section_tuple.is_encapsulated:  # encapsulation sections
           # value can be 0x1 - EFI_SECTION_COMPRESSION, 0x2 -EFI_SECTION_GUID_DEFINED or 0x3 - EFI_SECTION_DISPOSABLE
           nesting_level += 1
@@ -647,6 +657,29 @@ class UefiParser(object):
                                              is_compressed=is_compressed
                                              )
     return result
+
+  def parse_efi_variable_data(self, buffer, buffer_pointer=0x0, end_point=0x0):
+    if not self.parse_efi_variable:
+      log.info("EFI Variable parsing Skipped")
+      return False
+    log.debug(f"=======> offset: 0x{buffer_pointer:X} end: 0x{end_point:X}")
+    efi_var_struct = structure.efi_variable_structure()
+    if efi_var_struct.cls_size + buffer_pointer <= end_point:
+      buffer.seek(buffer_pointer)
+      efi_var_data = efi_var_struct.read_from(buffer)
+      if efi_var_data.guid.guid != '00000000-0000-0000-0000000000000000' and efi_var_data.name_length and efi_var_data.data_length:
+        efi_var_struct = structure.efi_variable_structure(name_length=efi_var_data.name_length,
+                                                          data_length=efi_var_data.data_length)
+        if efi_var_struct.cls_size + buffer_pointer <= end_point:
+          buffer.seek(buffer_pointer)
+          efi_var_data = efi_var_struct.read_from(buffer)
+          log.debug(efi_var_data)
+          _key = f"{efi_var_data.get_name}_{efi_var_data.guid.guid}"
+          self.efi_variables[_key] = efi_var_data.dump_dict()
+          return self.parse_efi_variable_data(buffer, buffer_pointer=buffer_pointer + efi_var_data.cls_size, end_point=end_point)
+        else:
+          print("No data available to parse")
+          return False
 
   def sort_output_fv(self, input_dict=None):
     from collections import OrderedDict
