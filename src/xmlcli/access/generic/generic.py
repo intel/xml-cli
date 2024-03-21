@@ -12,6 +12,8 @@ from ..base import base
 
 __all__ = ["CommonCliAccess"]
 
+MAX_READ_SIZE = 0x400
+
 
 class CommonCliAccess(base.BaseAccess):
   def __init__(self, access_name, child_class_directory):
