@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% if title %}
+        <title>XmlCli | {{ title }}</title>
+    {% else %}
+        <title>XmlCli</title>
+    {% endif %}
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" sizes="any" type="image/ico">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/toastr.min.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.4.1.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/toastr.min.js') }}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+{% block navbar %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="{{ url_for('index') }}">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('select_interface') }}">Select XML</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('create_nvar') }}">Create Nvar</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('display_created_knobs') }}">Display created Nvar</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('generate_xml') }}">Generate XML</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('save_xml') }}">Save XML</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('save_nvar') }}">Save to SUT</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('access_db', action_on='nvar', action='view') }}">View JSON</a>
+      </li>
+    </ul>
+  </div>
+    </nav>
+{% endblock %}
+
+{% block  title %}
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container-fluid">
+            <h1 class="display-4">{{ title }}</h1>
+        </div>
+    </div>
+{% endblock %}
+
+{% block errors %}
+    {{ toastr.message() }}
+{#    {% with messages = get_flashed_messages(with_categories=true) %}#}
+{#        {% if messages %}#}
+{#            {% for category, message in messages %}#}
+{#                <div class="alert alert-{{ 'danger' if category=='error' else category }}"> {{ message|capitalize }} </div>#}
+{#            {% endfor %}#}
+{#        {% endif %}#}
+{#    {% endwith %}#}
+{% endblock %}
+
+{% block content %}
+{% endblock %}
+
+</body>
+{% block commonscripts %}
+    <script type="application/javascript">
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    
+    <script type="text/javascript">
+        var csrf_token = "{{ csrf_token() }}";
+        // console.log(csrf_token);
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                }
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+</html>

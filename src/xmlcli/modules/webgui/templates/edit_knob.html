@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block errors %}
+{% endblock %}
+
+{% block content %}
+    {% from "_formhelpers.html" import render_dict_form %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="embed-responsive">
+                    <form>
+                        {{ render_dict_form(nvar_data) }}
+                    </form>
+                </div>
+                <div class="embed-responsive">
+                    <form>
+                        {{ render_dict_form(knob_data) }}
+                    </form>
+                </div>
+                <div class="embed-responsive">
+                    <form method=post>
+                        <div class="col-auto">
+                            <button type="button" id="submitData" class="btn btn-primary">Submit</button>
+                        </div>
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"/>
+                    </form>
+                </div>
+                <div class="modal fade bd-example-modal-lg" id="otherDetailModal" tabindex="-1" role="dialog" aria-labelledby="knobDetailsLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="knobDetailsLongTitle">Select Detailed options</h5>
+                            </div>
+                            <div class="modal-body" id="modal-body">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" id="save_details" class="btn btn-primary">Done</button>
+                                <button type="button" id="discard_details" class="btn btn-secondary" data-dismiss="modal">Discard</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                {% include 'render_knobs.html' %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+
+    var csrf_token = "{{ csrf_token() }}";
+    $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                }
+            }
+        });
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/validators.js') }}"></script>
+    <script type="text/javascript">
+        let unique_id = '{{ unique_id }}';
+        let content = {
+            url: "{{ url_for('access_db', action='edit', action_on='knob') }}",
+            method: "POST",
+            data: {
+                key: "{{ key }}",
+                unique_id: "{{ unique_id }}",
+            },
+        };
+        let savedKnobDetails = false;
+
+        //
+        if ($("#disabled-knob_type")[0].value === "oneof"){
+            let options = JSON.parse($("#disabled-options")[0].value.split("'").join('"'));
+            $("#disabled-options").parent().html('<select class="custom-select" id="disabled-options" multiple disabled></select>');
+            for (let i in options){
+               let optionText = options[i]["text"];
+               let optionValue = options[i]["value"];
+               let option = document.createElement("option");
+               option.text = optionValue + " - " + optionText;
+               option.value = optionValue;
+               document.getElementById("disabled-options").add(option);
+            }
+        }
+
+        // scripts to display hex representation of integer input
+        $('[name="newValue"]').on("change keyup paste click", function () {
+            if (document.getElementById('disabled-knob_type').value === 'numeric' || document.getElementById('disabled-knob_type').value === 'oneof') {
+                updateElement("for", document.getElementById('disabled-knob_type').value + "Form-value", "Current Value");
+            }
+            content.data["new_value"] = $('[name="newValue"]')[0].value;
+            console.log(content.data);
+        });
+
+        $("#saveData").on("click", function () {
+            console.log("clicked on save data...");
+            $("#changeInput")[0].disabled = false;
+            $("#saveData")[0].disabled = true;
+            content.data["new_value"] = $('[name="newValue"]')[0].value;
+            CustomRequest(content);
+            location.reload(true);
+            console.log(content.data);
+        });
+        $("#submitData").on("click", function () {
+            CustomRequest(content);
+            window.location.href = "{{ url_for('display_created_knobs') }}";
+        })
+    </script>
+{% endblock %}
+

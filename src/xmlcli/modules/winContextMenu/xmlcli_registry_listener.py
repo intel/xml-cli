@@ -38,6 +38,8 @@ class RegistryListener(object):
     self.command_method_map = OrderedDict({
       "all"         : CMD_MAP("all", self.command_all, "Run All"),
       "savexml"     : CMD_MAP("savexml", self.command_savexml, "Save XML"),
+      "gengui"      : CMD_MAP("gengui", self.command_generate_gui, "GUI"),
+      "webgui"      : CMD_MAP("webgui", self.command_generate_web_gui, "Web GUI - UEFI Variable"),
       "generatejson": CMD_MAP("generatejson", self.command_generate_json, "Parse firmware as json"),
       "shell"       : CMD_MAP("shell", self.command_launch_shell, "Launch Shell"),
     })
@@ -114,6 +116,16 @@ class RegistryListener(object):
     startup_script = os.path.join(self.xmlcli_path, "start_xmlcli.py")
     cmd = [sys.executable, "-i", startup_script]
     subprocess.check_call(cmd)
+
+  def command_generate_gui(self):
+    from xmlcli.modules.eBiosSetupPage import eBiosSetupPage
+
+    eBiosSetupPage.gen_gui()
+
+  def command_generate_web_gui(self):
+    from xmlcli.modules.webgui import main
+
+    main.run_gui()
 
 
 if __name__ == "__main__":

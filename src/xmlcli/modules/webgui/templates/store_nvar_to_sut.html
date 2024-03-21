@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block errors %}
+    {% if form.errors %}
+        <div class="alert alert-danger"> {{ form.errors }} </div>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% from "_formhelpers.html" import render_field %}
+    <div class="container">
+        <form method=post>
+            {% if form._fields %}
+                {% for field_name, field in form._fields.items() %}
+                    {% if field_name != 'submit' %}
+                        {{ render_field(field) }}
+                    {% endif %}
+                {% endfor %}
+                <div class="col-auto">
+                    <input class="btn btn-primary" id="submit" name="submit" type="submit" value="Submit">
+                </div>
+            {% endif %}
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        </form>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+
+    </script>
+{% endblock %}

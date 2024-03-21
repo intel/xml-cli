@@ -1,0 +1,46 @@
+{% macro render_field(field) %}
+    {% if field %}
+        <div class="form-group row">
+            <label class="col-md-4 col-form-label" for="{{ field.id }}" data-toggle="tooltip" data-placement="bottom" title="{{ field.render_kw.placeholder }}">{{ field.label.text }}</label>
+            <div class="col-md-8 mb-3">
+                {% if field.errors %}
+                    {{ field(class="form-control is-invalid")|safe }}
+                    <div class="invalid-feedback">
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ field(**kwargs)|safe }}
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro render_dict_form(form) %}
+    {% for field, value in form.items() %}
+        {% if field|lower not in ["knobs", "free_space", "next_offset"] %}
+            <div class="form-group row">
+                <label class="col-md-4 col-form-label" for="disabled-{{ field }}">{{ field|capitalize }}</label>
+                {% if field|lower != "current_value" %}
+                    <div class="col-md-8 mb-3">
+                        <input class="form-control" id="disabled-{{ field }}" name="disabled-{{ field }}" value="{{ value|int_hex }}" data-toggle="tooltip" data-placement="bottom" title="{{ value|int_hex }}" disabled>
+                    </div>
+                {% else %}
+{#                    <label class="col-md-4 col-form-label" for="changeValue">{{ field|capitalize }}</label>#}
+                    <div id="changeValue" class="col-md-4 mb-3">
+                        <input class="form-control" id="disabled-{{ field }}" name="newValue" value="{{ value|int_hex }}" data-toggle="tooltip" data-placement="bottom" title="{{ value|int_hex }}" disabled>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <button type="button" class="btn btn-info" id="changeInput" onclick="enableValidInput('changeValue', '{{ form.knob_type }}')">Change</button>
+                    </div>
+                    <div class="col-md-1 mb-3">
+                        <button type="button" class="btn btn-info" id="saveData" disabled>Save</button>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
