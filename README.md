@@ -74,10 +74,10 @@ cli.clb._setCliAccess("<access-method>")
 
 Below are listed valid `<access-method>`:
 
-| Access Method | Remarks |
-| --- | --- |
-| `linux` | For using linux as interface, need to open Python Prompt in root permissions. |
-| `winrwe` | For using `RW.exe` as Windows interface (**slow**, least recommended). For more details refer [winrwe/README.md](src/xmlcli/access/winrwe/README.md) |
+| Access Method | Remarks                                                                                                                                              |
+|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `linux`       | For using linux as interface, need to open Python Prompt in root permissions.                                                                        |
+| `winrwe`      | For using `RW.exe` as Windows interface (**slow**, least recommended). For more details refer [winrwe/README.md](src/xmlcli/access/winrwe/README.md) |
 
 
 ## Running popular commands
@@ -100,11 +100,11 @@ from xmlcli import XmlCli as cli
 cli.clb.ConfXmlCli()  # Check if XmlCli is supported &/ Enabled on the current system.
 ```
 
-| Return value of `cli.clb.ConfXmlCli` | Meaning |
-| --- | --- |
-| 0 | XmlCli is already **supported & enabled**. |
-| 1 | XmlCli is **not supported** on the current BIOS or the System BIOS has not completed Boot. |
-| 2 | XmlCli is **supported** but was **not enabled**, the script has now enabled it and **SUT needs reboot** to make use of XmlCli. |
+| Return value of `cli.clb.ConfXmlCli` | Meaning                                                                                                                        |
+|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| 0                                    | XmlCli is already **supported & enabled**.                                                                                     |
+| 1                                    | XmlCli is **not supported** on the current BIOS or the System BIOS has not completed Boot.                                     |
+| 2                                    | XmlCli is **supported** but was **not enabled**, the script has now enabled it and **SUT needs reboot** to make use of XmlCli. |
 
 ### To Save Target XML file
 
@@ -226,12 +226,12 @@ cli.MsrAccess(cli.clb.WRITE_MSR_OPCODE, 0x1A0, 0, 0x1)
 
 EFI App is located under `tools/XmlCliKnobs.efi`, below commands can be executed on UEFI Shell:
 
-| Command | Description |
-| ------- | ----------- |
+| Command              | Description                                                                                                              |
+|----------------------|--------------------------------------------------------------------------------------------------------------------------|
 | `XmlCliKnobs.efi CX` | Ensure XmlCli is enabled, if it's not enable, this command helps to enable XmlCli, Reboot SUT if XmlCli was not enabled. |
-| `XmlCliKnobs.efi -v` | Get version information of the efi App |
-| `XmlCliKnobs.efi GX` | Generate Bios Knobs xml dump |
-| `XmlCliKnobs.efi` | List out all possible available commands |
+| `XmlCliKnobs.efi -v` | Get version information of the efi App                                                                                   |
+| `XmlCliKnobs.efi GX` | Generate Bios Knobs xml dump                                                                                             |
+| `XmlCliKnobs.efi`    | List out all possible available commands                                                                                 |
 
 
 ## Additional Feature and Modules
@@ -243,5 +243,5 @@ These modules are extension of core XmlCli API also shows example of how it can 
 | [UEFI Variable Modification GUI](src/xmlcli/modules/webgui/README.md)      | Web based GUI implementation for UEFI Variable modification APIs                         |
 | [Context Menu for Windows OS](src/xmlcli/modules/winContextMenu/README.md) | Installing context menu in windows OS for frequently used APIs                           |
 | [UEFI Binary Parsing](docs/user_guide/uefi_binary_parsing.md)              | Parsing UEFI BIOS Binary file as json information, extracting firmware volumes, ffs etc. |
-| [Customizing Logging](docs/user_guide/log_configuration.md)                | Instruction guide on customizing logging |
+| [Customizing Logging](docs/user_guide/uefi_binary_parsing.md)              | Instruction guide on customizing logging                                                 |
 

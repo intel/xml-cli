@@ -28,30 +28,30 @@ gen_gui()  # generates GUI to launch the virtual setup page
 
 #### Prefix of dropdown Knob options selection values in GUI are as below
 
-| Prefix | Interpretation |
-| --- | --- |
-| ◇ | Default Value of knob |
-| ◈ | Current value of knob |
-| ◆ | current and default value of knob |
+| Prefix | Interpretation                    |
+|--------|-----------------------------------|
+| ◇      | Default Value of knob             |
+| ◈      | Current value of knob             |
+| ◆      | current and default value of knob |
 
 #### Interpretation of buttons on Virtual Setup Page GUI
 
-| Button | Interpretation |
-| --- | --- |
-| Push Changes | Apply changes to system if online mode else to `bin/rom` file, (N/A for offline xml) |
-| View Changes | View saved changes in new window |
-| Exit | Exit the GUI |
-| Reload | Reload the GUI |
+| Button          | Interpretation                                                                                               |
+|-----------------|--------------------------------------------------------------------------------------------------------------|
+| Push Changes    | Apply changes to system if online mode else to `bin/rom` file, (N/A for offline xml)                         |
+| View Changes    | View saved changes in new window                                                                             |
+| Exit            | Exit the GUI                                                                                                 |
+| Reload          | Reload the GUI                                                                                               |
 | Discard Changes | Discard any change made, any value if modified are restored to current value (`CurrentVal`) of knob xml file |
-| Load Defaults | Restore to default values and revert any changes made |
+| Load Defaults   | Restore to default values and revert any changes made                                                        |
 
 #### Status of buttons and action on Virtual Setup Page GUI on various modes/scenarios
 
-| Button          | Online | Offline `.xml` | Online `.xml` | `.bin` or `.rom` file |
-| --------------- | ------ | --- | --- | --- |
-| Push Changes    | ✔  changes directly written to the SUT | ❌ | ❌ (if _Publish all_ selected in previous option) | ✔ changes written to new bin file |
-| View Changes    | ✔     | ✔    | ✔     | ✔    |
-| Exit            | ✔     | ✔    | ✔     | ✔    |
-| Reload          | ✔     | ✔    | ✔     | ✔    |
-| Discard Changes | ✔     | ✔    | ✔     | ✔    |
-| Load Defaults   | ✔     | ❌    | ❌    | ❌    |
+| Button          | Online                                 | Offline `.xml` | Online `.xml`                                    | `.bin` or `.rom` file             |
+|-----------------|----------------------------------------|----------------|--------------------------------------------------|-----------------------------------|
+| Push Changes    | ✔  changes directly written to the SUT | ❌              | ❌ (if _Publish all_ selected in previous option) | ✔ changes written to new bin file |
+| View Changes    | ✔                                      | ✔              | ✔                                                | ✔                                 |
+| Exit            | ✔                                      | ✔              | ✔                                                | ✔                                 |
+| Reload          | ✔                                      | ✔              | ✔                                                | ✔                                 |
+| Discard Changes | ✔                                      | ✔              | ✔                                                | ✔                                 |
+| Load Defaults   | ✔                                      | ❌              | ❌                                                | ❌                                 |
