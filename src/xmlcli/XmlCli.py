@@ -3,6 +3,7 @@ __author__ = ["Gahan Saraiya", "ashinde"]
 
 # Built-in Imports
 import os
+import json
 
 # Custom Imports
 from .common import configurations
@@ -208,7 +209,7 @@ def cliProcessKnobs(xmlfilename, inifilename, CmdSubType, ignoreXmlgeneration=Fa
       offsetOut = offsetOut + 10 + (OutByteSize*2)
     offsetIn = offsetIn + 4 + InByteSize
     NumberOfEntries = NumberOfEntries-1
-
+  create_json(KnobsDict, CmdSubType) # Function call to create json output
   if (PrintResParams):
     log.result(', see below for the results..')
     log.result('|--|-----|------------------------------------------|--|-----------|-----------|')
@@ -677,3 +678,38 @@ def IoAccess(operation, IoPort=0xFFFF, Size=0xFF, IoValue=0):
   log.result(f'IO Port 0x{IoPort:X}  Size = 0x{Size:X}  Value = 0x{IoValue:X} ')
   clb.CloseInterface()
   return 0
+
+def create_json(knobs_dict=[], cmd_subtype=None):
+  """Generates JSON output file for the online mode operations
+
+    :param knobs_dict: dictionary which contains knobs entry parameters from CLI's response buffer.
+    :param cmd_subtype: type of the operation performed
+    :return:
+  """
+  json_dict = {}
+  current_value = 0
+  default_value = 0
+  json_filename = clb.JSON_OUT_FILE
+  for knob_count in range (0, len(knobs_dict)):  # read and print the return knobs entry parameters from CLI's response buffer
+    if knobs_dict[knob_count]['Type'] == 'string':
+      if knobs_dict[knob_count]['DefValue'] == 0:
+        def_str = ''
+      else:
+        def_str = utils.unhex_lify(knobs_dict[knob_count]['DefValue'])[::-1]
+      if knobs_dict[knob_count]['OutValue'] == 0:
+        out_str = ''
+      else:
+        out_str = utils.unhex_lify(knobs_dict[knob_count]['OutValue'])[::-1]
+      default_value = def_str
+      current_value = out_str
+    else:
+      default_value = knobs_dict[knob_count]["DefValue"]
+      current_value = knobs_dict[knob_count]["OutValue"]
+    expected_value = knobs_dict[knob_count]['InValue']
+    result = 'Pass' if knobs_dict[knob_count]['InValue'] == knobs_dict[knob_count]['OutValue'] else 'Fail'
+    if cmd_subtype == clb.CLI_KNOB_LOAD_DEFAULTS:
+      json_dict[knob_count] = {'KnobName': knobs_dict[knob_count]["KnobName"], 'PreviousVal': default_value, 'RestoredVal': current_value,'ExpectedValue':expected_value,'Result':result}
+    else:
+      json_dict[knob_count] = {'KnobName': knobs_dict[knob_count]["KnobName"], 'ExpectedValue':expected_value, 'CurrentValue': current_value,'Result':result}
+  with open(json_filename, 'w') as fp:
+    json.dump(json_dict, fp)

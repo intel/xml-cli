@@ -9,6 +9,7 @@ import json
 import uuid
 import shlex
 import ctypes
+import binascii
 import platform
 import warnings
 
@@ -1307,6 +1308,15 @@ def zero_padding(binary, size):
   zero_pad = bytearray(size)
   binary_file.extend(zero_pad)
   return binary_file
+
+def unhex_lify(integer):
+  """
+  Function to convert an integer to its corresponding string representation using hexadecimal encoding.
+
+  :param integer: The integer to be converted.
+  :return: the string representation of the integer
+  """
+  return binascii.unhexlify((hex(integer)[2:]).strip('L')).decode()
 
 
 if __name__ == "__main__":
