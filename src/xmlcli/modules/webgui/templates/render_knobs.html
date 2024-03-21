@@ -1,0 +1,40 @@
+<div class="embed-responsive">
+    <div class="table-responsive">
+        <table class="table table-responsive">
+            <thead class="thead-light">
+            <th scope="col">Knob Unique Id</th>
+            <th scope="col">Knob Name</th>
+            <th scope="col">Type</th>
+            <th scope="col">Offset</th>
+            <th scope="col">Size</th>
+            <th scope="col">Default Value</th>
+            <th scope="col">Current Value</th>
+            <th scope="col">Description</th>
+            <th scope="col">Edit</th>
+            <th scope="col"></th>
+            </thead>
+            {% for uid, knob in nvar_data.knobs.items() %}
+                <tr id="{{ uid }}">
+                    <th scope="row">{{ uid }}</th>
+                    <td>{{ knob.name }}</td>
+                    <td>{{ knob.knob_type }}</td>
+                    <td>{{ knob.offset|int_hex }}</td>
+                    <td>{{ knob.size|int_hex }}</td>
+                    <td>{{ knob.value|int_hex }}</td>
+                    <td>{{ knob.current_value|int_hex }}</td>
+                    <td>{{ knob.description }}</td>
+                    <td>
+                        <a id="editNvar" href="{{ url_for('edit_knob', nvar_key=key, unique_id=uid) }}"
+                           class="btn btn-primary active" role="button" aria-pressed="true">Edit</a>
+                    </td>
+                    <td>
+                        <button id="deleteNvar" type="button" class="btn btn-danger"
+                                onclick="deleteKnob('{{ key }}', '{{ uid }}')" {{ '' if knob.can_delete else 'disabled' }}>
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>

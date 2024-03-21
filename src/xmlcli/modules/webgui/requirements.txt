@@ -1,0 +1,8 @@
+# Requirements to use the Web GUI
+flask >= 2.2.3
+jinja2 >= 3.1.3
+wtforms >= 3.0.0a1
+flask_talisman >= 1.0.0
+cryptography >= 39.0.1
+flask-seasurf >= 1.1.1
+Werkzeug >= 2.2.3

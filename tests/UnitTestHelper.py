@@ -107,6 +107,17 @@ class UnitTestHelper(unittest.TestCase):
   def bios_roms(self, value):
     self._bios_roms = value
 
+  def get_error_string(self, error_signature, prefix_err_msg="", disable_online_mode=False):
+    error_msg = "ERROR-{}: {}".format(error_signature, cli.clb.LastErrorSigDict.get(error_signature))
+    if prefix_err_msg:
+      error_msg = prefix_err_msg + "\n" + error_msg
+    if disable_online_mode and error_signature:
+      self.log.info("Disabling online mode...")
+      global ONLINE_MODE
+      ONLINE_MODE = False
+    self.log.error(error_msg)
+    return error_msg
+
 
 if __name__ == "__main__":
   unittest.main()

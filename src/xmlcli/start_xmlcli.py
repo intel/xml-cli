@@ -17,6 +17,7 @@ def cli():
       from xmlcli.common import utils
       from xmlcli.modules import helpers
       from xmlcli.modules.winContextMenu import install_context_menu
+      from xmlcli.modules.webgui.main import run_gui
 
       print(f"xmlcli v{__version__}\n{os.path.dirname(cli.__file__)}")
       if len(sys.argv) > 1:
@@ -26,6 +27,8 @@ def cli():
           install_context_menu.install_context_menu()
           if not set(sys.argv).intersection({'py', '--py', 'ipy', '--ipy'}):
             exit(1)
+        if sys.argv[1].lower() in ('launch_gui', '--launch_gui'):
+          run_gui()
 
     except Exception as e:
         print(

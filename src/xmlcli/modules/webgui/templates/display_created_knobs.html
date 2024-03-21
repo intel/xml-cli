@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block  title %}
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container-fluid">
+            <h1 class="display-3">{{ title }}</h1>
+
+            {% if show_all %}
+                Currently displaying all Nvar which are ever created. To view only the Nvars on SUT
+                <a href="{{ url_for('display_created_knobs') }}?show_all=false">click here</a>
+            {% else %}
+                Currently displaying only Nvar which are existing on SUT. To view all the Nvars
+                <a href="{{ url_for('display_created_knobs') }}?show_all=true">click here</a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <table class="table">
+            <thead class="thead-light">
+                <th scope="col">Unique Id</th>
+                <th scope="col">NVAR Name</th>
+                <th scope="col">GUID</th>
+                <th scope="col">Size</th>
+                <th scope="col">Knob Details</th>
+                <th scope="col"></th>
+            </thead>
+            {% for key, nvar_data in created_knobs.items() %}
+                {% if nvar_data.is_exist or show_all %}
+                    <tr id="{{ key }}" class="{{ '' if nvar_data.is_exist else 'table-dark' }}">
+                        <th scope="row">{{ key }}</th>
+                        <td>{{ nvar_data.name }}</td>
+                        <td>{{ nvar_data.guid }}</td>
+                        <td>{{ nvar_data.size|int_hex }}</td>
+                        <td>
+                            <button id="viewKnobDetails" type="button" class="btn btn-primary btn-sm" onclick="loadKnobDetails('{{ key }}')" data-toggle="modal" data-target="#knobDetails-{{ key }}">
+                                View
+                            </button>
+                            <div class="modal fade bd-example-modal-xl" id="knobDetails-{{ key }}" tabindex="-1" role="dialog" aria-labelledby="knobDetailsLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-xl">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="knobDetailsLongTitle">Knob Details</h5>
+
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            {% include 'render_knobs.html' %}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" onclick="redirectUrl('{{ key }}')" class="btn btn-primary btn-sm" {{ "disabled" if not nvar_data.free_space and nvar_data.is_exist or nvar else "" }}>Add Knob</button>
+                                            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <button id="deleteNvar" type="button" class="btn btn-danger btn-sm" onclick="deleteNvar('{{ key }}')">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        function redirectUrl(nvar_key) {
+            window.location.href = "{{ url_for('create_knob', nvar_key='') }}" + nvar_key;
+        }
+
+        function loadKnobDetails(nvar_key){
+            content = {
+                url: "{{ url_for('access_db', action='view', action_on='nvar') }}",
+                method: "POST",
+                data: {
+                    'key': nvar_key
+                }
+            };
+            console.log("loading Knobs...");
+            console.log(content);
+            CustomRequest(content);
+            let server_response = JSON.parse(sessionStorage.getItem("server_response"));
+            console.log(server_response)
+        }
+        function deleteNvar(nvar_key){
+            content = {
+                url: "{{ url_for('access_db', action='delete', action_on='nvar') }}",
+                method: "POST",
+                data: {
+                    'key': nvar_key,
+                    'id_to_remove': nvar_key
+                }
+            };
+            console.log("deleting Nvar");
+            console.log(content);
+            let status = CustomRequest(content);
+            console.log(status);
+            let server_response = JSON.parse(sessionStorage.getItem("server_response"));
+            console.log(server_response);
+            if (server_response.status === "success") {
+                document.getElementById(nvar_key).remove();
+            }
+        }
+        function deleteKnob(nvar_key, unique_id){
+            content = {
+                url: "{{ url_for('access_db', action='delete', action_on='knob') }}",
+                method: "POST",
+                data: {
+                    'key': nvar_key,
+                    'unique_id': unique_id,
+                    'id_to_remove': unique_id
+                }
+            };
+            console.log("Deleting Knob");
+            console.log(content);
+            let status = CustomRequest(content);
+            console.log(status);
+            let server_response = JSON.parse(sessionStorage.getItem("server_response"));
+            console.log(server_response);
+            if (server_response.status === "success") {
+                document.getElementById(unique_id).remove();
+            }
+        }
+    </script>
+{% endblock %}

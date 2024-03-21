@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block errors %}
+    {% if form.errors %}
+        <div class="alert alert-danger"> {{ form.errors }} </div>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% from "_formhelpers.html" import render_field %}
+    {% from "_formhelpers.html" import render_dict_form %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="embed-responsive">
+                    <form>
+                        {{ render_dict_form(nvar_data) }}
+                    </form>
+                </div>
+                <div class="embed-responsive">
+                    <form method=post>
+                        {% if form._fields %}
+                            {% for field_name, field in form._fields.items() %}
+                                {% if field_name != 'submit' and field_name %}
+                                    {{ render_field(field) }}
+                                {% endif %}
+                            {% endfor %}
+                            <div class="col-auto">
+                                <button type="button" id="submitData" class="btn btn-primary" {{ "disabled" if not nvar_data.free_space and nvar_data.is_exist or nvar else "" }}>Submit</button>
+                                <button type="button" id="saveData" class="btn btn-primary" {{ "disabled" if not nvar_data.free_space and nvar_data.is_exist or nvar else "" }}>Save and Create</button>
+                            </div>
+                            <div class="modal fade bd-example-modal-lg" id="otherDetailModal" tabindex="-1" role="dialog" aria-labelledby="knobDetailsLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="knobDetailsLongTitle">Select Detailed options</h5>
+                                        </div>
+                                        <div class="modal-body" id="modal-body">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" id="save_details" class="btn btn-primary">Done</button>
+                                            <button type="button" id="discard_details" class="btn btn-secondary" data-dismiss="modal">Discard</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                      {% endif %}
+                      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"/>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-7">
+                {% include 'render_knobs.html' %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/validators.js') }}"></script>
+    <script type="text/javascript">
+        content = {
+            url: "{{ url_for('access_db', action='create', action_on='knob') }}",
+            method: "POST",
+            data: {
+                key: "{{ key }}",
+            },
+        };
+        let savedKnobDetails = false;
+        $("#knob_type").on("change", function () {
+            knobHandler();
+        });
+        // scripts to display hex representation of integer input
+        updateElement("for", "disabled-size", "Size");
+        updateElement("for", "offset", "Offset");
+
+        // dynamic form values updater
+        $("#name").on("change keyup paste click", function () {
+            contentUpdater("name", "name");
+        });
+
+        $("#description").on("change keyup paste click", function () {
+            contentUpdater("description", "description");
+        });
+
+        $("#size").on("change keyup paste click", function () {
+            updateElement("for", "size", "Size");
+            contentUpdater("size", "size");
+        });
+
+        $("#offset").on("change keyup paste click", function () {
+            updateElement("for", "offset", "Offset");
+            contentUpdater("offset", "offset");
+        });
+
+        $("#submitData").on("click", function () {
+            if (validate_non_empty_knob_input()){
+                CustomRequest(content);
+                window.location.href = "{{ url_for('display_created_knobs') }}";
+            }
+        });
+
+        $("#saveData").on("click", function () {
+            if (validate_non_empty_knob_input()){
+                CustomRequest(content);
+                // $.when(CustomRequest(content), window.location.reload(true));
+                console.log(content.data);
+            }
+        })
+    </script>
+{% endblock %}
+
