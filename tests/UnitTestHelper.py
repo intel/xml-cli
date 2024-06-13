@@ -11,6 +11,7 @@ import warnings
 from xmlcli.common import utils
 from xmlcli.common import logger
 from xmlcli.common import configurations
+from xmlcli import XmlCli as cli
 
 __author__ = "Gahan Saraiya"
 __all__ = ["UnitTestHelper",

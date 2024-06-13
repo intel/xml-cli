@@ -9,6 +9,7 @@ import json
 import uuid
 import shlex
 import ctypes
+import binascii
 import platform
 import warnings
 
@@ -636,6 +637,8 @@ class StructureHelper(ctypes.Structure):
       val = [f"{_val:0>2x}" if is_integer(_val) else _val.dump_dict() for _idx, _val in enumerate(list(val))]
       if flag:
         val = hex(int("".join(val[::-1]), 16))
+    else:
+      return ""
     return val
 
   def get_value(self, name):
@@ -1307,6 +1310,15 @@ def zero_padding(binary, size):
   zero_pad = bytearray(size)
   binary_file.extend(zero_pad)
   return binary_file
+
+def unhex_lify(integer):
+  """
+  Function to convert an integer to its corresponding string representation using hexadecimal encoding.
+
+  :param integer: The integer to be converted.
+  :return: the string representation of the integer
+  """
+  return binascii.unhexlify((hex(integer)[2:]).strip('L')).decode()
 
 
 if __name__ == "__main__":

@@ -12,8 +12,9 @@ include start_xmlcli.sh
 
 recursive-include src/xmlcli/cfg *
 
-include src/xmlcli/modules/*
-recursive-include src/xmlcli/modules/winContextMenu *
+include examples/*
+
+recursive-include src/xmlcli/modules *
 
 include src/xmlcli/out/.gitignore
 
@@ -21,6 +22,7 @@ include src/xmlcli/messages.json
 include src/xmlcli/xmlcli.config
 recursive-include src/xmlcli/common *
 recursive-include src/xmlcli/access/base *
+recursive-include src/xmlcli/access/generic *
 recursive-include src/xmlcli/access/linux *
 recursive-include src/xmlcli/access/stub *
 recursive-include src/xmlcli/access/winrwe *
@@ -31,6 +33,7 @@ include tests/CommonTests.py
 include tests/tests.config
 include tests/UefiParserTest.py
 include tests/UnitTestHelper.py
+include tests/XmlCliTest.py
 
 include src/xmlcli/tools/*
 include docs/user_guide/*

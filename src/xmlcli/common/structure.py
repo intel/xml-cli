@@ -5,9 +5,12 @@ import ctypes
 from collections import namedtuple
 
 # custom imports
-import utils
-from logger import log
-DescriptorRegion = None
+from . import utils
+from .logger import log
+try:
+  from ..restricted.structure_restricted import *
+except ModuleNotFoundError as e:
+  DescriptorRegion = None
 
 __version__ = "0.0.1"
 __author__ = "Gahan Saraiya"
@@ -761,6 +764,47 @@ class FitEntry(utils.StructureHelper):
     ('Type', ctypes.c_uint8),  # Bit[7] = C_V
     ('Checksum', ctypes.c_uint8),  # 1 byte
   ]
+
+
+###############################################################################
+# EFI Variable Structure
+###############################################################################
+def efi_variable_structure(name_length=0, data_length=0):
+  """Structure for EFI Variable stored in NVRAM region
+
+  REF: edk2/BaseTools/Source/C/Include/Protocol/HiiFramework.h
+
+  :param name_length: Length data bytes for efi variable name
+  :param data_length: data size of the given variable
+  :return:
+  """
+  class EfiVariableStructure(utils.StructureHelper):
+    _pack_ = 1
+    _fields_ = [
+      # read bits
+      ("unknown", ctypes.ARRAY(ctypes.c_uint8, 0x21)),  # Unknown size between two structures
+      ## Offset -- 0x47
+      ("State", ctypes.c_uint8),         #--> 00
+      ("Attribute", ctypes.c_uint32),    #--> 00 00 00 00
+      ("name_length", ctypes.c_uint32),  #--> 00 00 00 0C
+      ("data_length", ctypes.c_uint32),  #--> 00 00 10 56
+      ("guid", utils.Guid),  # 16 Bytes
+      ("name", ctypes.ARRAY(ctypes.c_uint8, name_length)),  # 12 Bytes
+      ("data", ctypes.ARRAY(ctypes.c_uint8, data_length)), # 4182 Byes
+    ]
+
+    @property
+    def get_name(self):
+      return ''.join([chr(i) for i in self.name]).replace("\x00", "")
+
+    def get_value(self, name):
+      if name == "name":
+        return self.get_name
+      else:
+        return super().get_value(name)
+
+  return EfiVariableStructure()
+
 
 # END:STRUCTURES #######################################################################################################
 
