@@ -137,6 +137,12 @@ CliCmdDict = {APPEND_BIOS_KNOBS_CMD_ID: 'APPEND_BIOS_KNOBS_CMD_ID', RESTOREMODIF
               READ_BRT_OPCODE         : 'READ_BRT_OPCODE', CREATE_FRESH_BRT_OPCODE: 'CREATE_FRESH_BRT_OPCODE', ADD_BRT_OPCODE: 'ADD_BRT_OPCODE',
               DEL_BRT_OPCODE          : 'DEL_BRT_OPCODE', DIS_BRT_OPCODE: 'DIS_BRT_OPCODE'}
 
+Xml_Sanitization_Mapping = {0x00: 0x20, 0x01: 0x20, 0x02: 0x20, 0x03: 0x20, 0x04: 0x20, 0x05: 0x20, 0x06: 0x20,
+                            0x07: 0x20, 0x08: 0x20, 0x0B: 0x20, 0x0C: 0x20, 0x0E: 0x20, 0x0F: 0x20, 0x10: 0x20,
+                            0x11: 0x20, 0x12: 0x20, 0x13: 0x20, 0x14: 0x20, 0x15: 0x20, 0x16: 0x20, 0x17: 0x20,
+                            0x18: 0x20, 0x19: 0x20, 0x1A: 0x20, 0x1B: 0x20, 0x1C: 0x20, 0x1D: 0x20, 0x1E: 0x20,
+                            0x1F: 0x20, 0x7F: 0x20, 0xB5: 0x75, 0x26: 0x6E, 0xA0: 0x2E, 0xB0: 0x20 }
+
 # Constants for Bitwise Knobs
 BITWISE_KNOB_PREFIX = 0xC0000
 
@@ -1143,33 +1149,22 @@ def PatchXmlData(XmlListBuff, XmlAddr, XmlSize):
 
 InValidXmlChar=['\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\x0B', '\x0C', '\x0E', '\x0F', '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17', '\x18', '\x19', '\x1A', '\x1B', '\x1C', '\x1D', '\x1E', '\x1F', '\x7F', '\x80', '\x81', '\x82', '\x83', '\x84', '\x86', '\x87', '\x88', '\x89', '\x8A', '\x8B', '\x8C', '\x8D', '\x8E', '\x8F', '\x90', '\x91', '\x92', '\x93', '\x94', '\x95', '\x96', '\x97', '\x98', '\x99', '\x9A', '\x9B', '\x9C', '\x9D', '\x9E', '\x9F', '\xAE','\xB0']
 def SanitizeXml(filename):
+  """
+  Function to sanitize the given xmlfile
+  :param filename: platform_config xml file path
+  :return: None
+  """
   try:
     MyTree = ET.parse(filename)
     log.info('SanitizeXml(): No XML syntax errors found with source XML file.')
   except:
-    with open(filename, 'rb') as TempXML:
-      XmlListBuff = list(TempXML.read())
-    Modified = False
-    for Index in range(len(XmlListBuff)):
-      CurrVal = XmlListBuff[Index]
-      CurrValChr = chr(CurrVal)
-      if (CurrVal == ListInsertVal(0xB5)):
-        XmlListBuff[Index] = ListInsertVal(0x75) # 'u'
-        Modified = True
-      if (CurrVal == ListInsertVal(0x26)):
-        XmlListBuff[Index] = ListInsertVal(0x6E)  # 'n'
-        Modified = True
-      elif (CurrVal == ListInsertVal(0xA0)):
-        XmlListBuff[Index] = ListInsertVal(0x2E)  #'.'
-        Modified = True
-      elif (CurrValChr in InValidXmlChar):
-        XmlListBuff[Index] = ListInsertVal(0x20)  # ' '
-        Modified = True
-    if(Modified):
-      log.info('SanitizeXml(): Fixing XML syntax errors found with source XML file.')
-      RenameFile (filename, filename+".raw")
-      with open(filename, 'wb') as NewXmlFile:  # opening for writing
-        NewXmlFile.write(bytearray(XmlListBuff))
+    log.info('SanitizeXml(): Fixing XML syntax errors found with source XML file.')
+    with open(filename, mode='r', newline='') as input_file, open(filename + '.clean', mode='w', newline='') as output_file:
+      for line in input_file.readlines():
+        cleaned_content = line.translate(Xml_Sanitization_Mapping)
+        output_file.write(cleaned_content)
+    RenameFile(f"{filename}", f"{filename}.raw")
+    RenameFile(f"{filename}.clean", f"{filename}")
 
 def IsXmlGenerated():
   global LastErrorSig
@@ -1959,7 +1954,7 @@ def SearchForSystemTableAddress():
       Address = memread((Address+8), 8)
       return Address
   return 0
-  
+
 def readDramMbAddrFromEFI():
   DramSharedMailBoxGuidLow = 0x4D2C18789D99A394
   DramSharedMailBoxGuidHigh = 0x3379C48E6BC1E998
