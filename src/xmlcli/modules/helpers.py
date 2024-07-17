@@ -155,22 +155,15 @@ def generate_knobs_delta(ref_xml, new_xml, out_file=r'KnobsDiff.log', compare_ta
           new_knobs_map[new_knob_name][current_tag] = new_value
 
   file_content = ""
-  log_msg = f'\n\nWriting delta knobs for comparing following fields \"{compare_tag}\"\n   RefXmlBiosVer = Arg 1 File = {ref_knobs_bios_version} \n   MyXmlBiosVer = Arg 2 File = {new_knobs_bios_version} '
-  log_msg += '--------------------------------------------------|----------------------|---------------------|'
-  '\n                  Knob Name (compare_tag)         |      RefXmlDefVal    |     MyXmlDefVal     |'
-  '\n                                                  |       Arg 1 File     |      Arg 2 File     |'
-  '\n--------------------------------------------------|----------------------|---------------------|'
+  log_msg = f'\n\nWriting delta knobs for comparing following fields \"{compare_tag}\"\n   RefXmlBiosVer = Arg 1 File = {ref_knobs_bios_version} \n   MyXmlBiosVer = Arg 2 File = {new_knobs_bios_version}\n'
   log.info(log_msg)
   if os.path.splitext(out_file)[-1].lower() not in ['.ini', '.cfg']:
     file_content += log_msg
   else:
-    file_content += ';-------------------------------------------------\n'
-    '; Knob Entries for XmlCli based setup, trying to clone {current_compare_tags[0]} from File 2\n'
-    '; The name entry here should be identical as the name from the XML file (retain the case)\n'
-    ';-------------------------------------------------\n'
-    '[BiosKnobs]\n'
-
+    file_content += ';-------------------------------------------------\n; Knob Entries for XmlCli based setup, trying to clone {current_compare_tags[0]} from File 2\n; The name entry here should be identical as the name from the XML file (retain the case)\n;-------------------------------------------------\n[BiosKnobs]\n'
+  header_list = ['Knob Name (compare_tag)', 'RefXmlDefVal (Arg 1 File)', 'MyXmlDefVal (Arg 2 File)']
   missing_in_new_knobs = []
+  knobs_dictionary=[]
   for knob in ref_knobs_map:
     if knob not in new_knobs_map:
       missing_in_new_knobs.append(knob)
@@ -180,10 +173,8 @@ def generate_knobs_delta(ref_xml, new_xml, out_file=r'KnobsDiff.log', compare_ta
         ref_str_value = ref_knobs_map[knob][current_tag]
         new_str_value = new_knobs_map[knob][current_tag]
         if ref_str_value != new_str_value:
-          log.info(f' {"%s (%s)" % (knob, current_tag):>48} | {ref_str_value:>20} | {new_str_value:<19} |')
-          if os.path.splitext(out_file)[-1].lower() not in ['.ini', '.cfg']:
-            file_content += f' {"%s (%s)" % (knob, current_tag):>48} | {ref_str_value:>20} | {new_str_value:<19} |\n'
-          else:
+          knobs_dictionary.append([f"{knob} ({current_tag})",ref_str_value,new_str_value])
+          if os.path.splitext(out_file)[-1].lower() in ['.ini', '.cfg']:
             if print_first_tag:
               file_content += f'{knob} = {new_str_value}\n'
               print_first_tag = False
@@ -191,9 +182,10 @@ def generate_knobs_delta(ref_xml, new_xml, out_file=r'KnobsDiff.log', compare_ta
   missing_in_ref_knobs = []
   for knob in new_knobs_map:
     missing_in_ref_knobs.append(knob)
-  log.info('--------------------------------------------------|----------------------|---------------------|')
   if os.path.splitext(out_file)[-1].lower() not in ['.ini', '.cfg']:
-    file_content += '--------------------------------------------------|----------------------|---------------------|\n'
+    file_content += utils.Table().create_table(header=header_list, data=knobs_dictionary, width=0)
+  log.result(utils.Table().create_table(header=header_list, data=knobs_dictionary, width=0))
+  
 
   if len(missing_in_ref_knobs) != 0:
     log.info(f'Following Knobs are missing in Arg 1 File\n\t [ {", ".join(missing_in_ref_knobs)} ]')
@@ -206,8 +198,6 @@ def generate_knobs_delta(ref_xml, new_xml, out_file=r'KnobsDiff.log', compare_ta
 
   with open(out_file, 'w') as out:
     out.write(file_content)
-  return file_content
-
 
 def compare_bios_knobs(reference_bin_file, new_bin_file, result_log_file=r'KnobsDifference.log', compare_tag='default'):
   """Take difference of Setup Option between two BIOS/IFWI
@@ -222,7 +212,7 @@ def compare_bios_knobs(reference_bin_file, new_bin_file, result_log_file=r'Knobs
   new_xml = clb.KnobsXmlFile.replace('BiosKnobs', 'MyBiosKnobs')
   cli.savexml(reference_xml, reference_bin_file)
   cli.savexml(new_xml, new_bin_file)
-  return generate_knobs_delta(reference_xml, new_xml, result_log_file, compare_tag)
+  generate_knobs_delta(reference_xml, new_xml, result_log_file, compare_tag)
 
 
 def launch_web_gui():
