@@ -20,8 +20,8 @@ from collections import defaultdict
 from collections import OrderedDict
 
 # Custom imports
-from .logger import log
-from .configurations import XMLCLI_CONFIG, ENCODING, XMLCLI_DIR, OUT_DIR, PY3, STATUS_CODE_RECORD_FILE
+from logger import log
+from configurations import XMLCLI_CONFIG, ENCODING, XMLCLI_DIR, OUT_DIR, PY3, STATUS_CODE_RECORD_FILE
 
 try:
   from defusedxml import ElementTree as ET
