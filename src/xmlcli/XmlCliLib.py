@@ -792,12 +792,13 @@ def ConfXmlCli(SkipEnable=0):
       try:
         from .tools.restricted import EnableXmlCli as exc
       except (ModuleNotFoundError, ImportError) as e:
-        from .tools import EnableXmlCli as exc
-      except ImportError:
-        log.error(f'Import error on EnableXmlCli, current Python version {sys.version}')
-        CloseInterface()
-        LastErrorSig = 0x13E4  # import error
-        return 0xF
+        try:
+          from .tools import EnableXmlCli as exc
+        except ImportError:
+          log.error(f'Import error on EnableXmlCli, current Python version {sys.version}')
+          CloseInterface()
+          LastErrorSig = 0x13E4  # import error
+          return 0xF
       Status = exc.EnableXmlCli()
       if Status == 0:
         Status = 2
@@ -824,11 +825,12 @@ def TriggerXmlCliEntry():
   try:
     from .tools.restricted import EnableXmlCli as exc
   except (ModuleNotFoundError, ImportError) as e:
-    from .tools import EnableXmlCli as exc
-  except ImportError:
-    log.error(f'Import error on EnableXmlCli, current Python version {sys.version}')
-    LastErrorSig = 0x13E4  # import error
-    return 1
+    try:
+      from .tools import EnableXmlCli as exc
+    except ImportError:
+      log.error(f'Import error on EnableXmlCli, current Python version {sys.version}')
+      LastErrorSig = 0x13E4  # import error
+      return 1
   status = exc.XmlCliApiAuthenticate()
   if status:
     LastErrorSig = 0xE7CA  # Error Triggering XmlCli command, Authentication Failed
