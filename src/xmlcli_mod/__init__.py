@@ -21,4 +21,6 @@
 #
 import logging
 
+from xmlcli_mod.xmlcli import XmlCli
+
 logging.getLogger(__name__).addHandler(logging.NullHandler())

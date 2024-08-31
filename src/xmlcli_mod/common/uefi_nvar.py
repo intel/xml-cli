@@ -8,7 +8,7 @@ import logging
 from collections import OrderedDict
 
 # Custom imports
-from .. import XmlCliLib as clb
+from .. import xmlclilib as clb
 from . import utils
 
 

@@ -27,7 +27,7 @@ import binascii
 import logging
 
 # Custom Imports
-from . import XmlCliLib as clb
+from . import xmlclilib as clb
 
 from defusedxml import ElementTree as ET
 

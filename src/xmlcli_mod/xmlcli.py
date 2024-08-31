@@ -25,7 +25,7 @@ import os
 from defusedxml.ElementTree import parse
 from tempfile import TemporaryDirectory
 
-from xmlcli_mod import XmlCliLib
+from xmlcli_mod import xmlclilib
 from xmlcli_mod.common.errors import BiosKnobsDataUnavailable
 from xmlcli_mod.common.errors import XmlCliNotSupported
 
@@ -35,8 +35,8 @@ log = logging.getLogger(__name__)
 class XmlCli:
     def __init__(self)->None:
         self.xml_knobs = None
-        XmlCliLib._setCliAccess("Linux")
-        xmlcli_not_supported = XmlCliLib.ConfXmlCli()
+        xmlclilib._setCliAccess("Linux")
+        xmlcli_not_supported = xmlclilib.ConfXmlCli()
         if xmlcli_not_supported:
             raise XmlCliNotSupported(xmlcli_not_supported)
         self._get_xml_knobs()
@@ -44,7 +44,7 @@ class XmlCli:
     def _get_xml_knobs(self)->None:
         with TemporaryDirectory() as tmpdir:
             temp_file = os.path.join(tmpdir, "temp.xml")
-            rc = XmlCliLib.SaveXml(temp_file)
+            rc = xmlclilib.SaveXml(temp_file)
             if rc:
                 raise BiosKnobsDataUnavailable()
             with open(temp_file) as f:

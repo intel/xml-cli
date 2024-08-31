@@ -10,7 +10,7 @@ import copy
 import logging
 
 # Custom Imports
-from . import XmlCliLib as clb
+from . import xmlclilib as clb
 from . import XmlIniParser as prs
 from .common import utils
 from .common import compress
