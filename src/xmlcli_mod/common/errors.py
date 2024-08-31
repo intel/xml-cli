@@ -1,4 +1,3 @@
-#
 #  Copyright 2024 Hkxs
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -18,3 +17,20 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
+from pyexpat.errors import messages
+
+
+class XmlCliNotSupported(SystemError):
+    def __init__(self, xmlcli_status):
+        if xmlcli_status == 1:
+            self.message = "XmlCli not supported on the Current BIOS"
+        elif xmlcli_status == 2:
+            self.message = "XmlCli not enabled"
+        else:
+            self.message = "Unknown XmlCli error"
+        super().__init__(self.message)
+
+class BiosKnobsDataUnavailable(SystemError):
+    def __init__(self):
+        self.message = "nable to get Xml Cli data from the system"
+        super().__init__(self.message)
