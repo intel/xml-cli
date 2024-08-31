@@ -4,17 +4,18 @@ __author__ = ["Gahan Saraiya", "ashinde"]
 # Built-in Imports
 import os
 import json
+import logging
 
 # Custom Imports
 from .common import configurations
-from .common.logger import log
+
 from . import XmlCliLib as clb
 from . import XmlIniParser as prs
 from . import UefiFwParser as fwp
 from .common.uefi_nvar import get_set_var
 
 BootOrderDict = {}
-
+log = logging.getLogger(__name__)
 
 def cliProcessKnobs(xmlfilename, inifilename, CmdSubType, ignoreXmlgeneration=False, PrintResParams=True, ResBufFilename=0, KnobsVerify=False, KnobsDict={}):
   clb.LastErrorSig = 0x0000

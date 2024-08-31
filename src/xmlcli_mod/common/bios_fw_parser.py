@@ -37,6 +37,7 @@ if uefi_parser.guid_to_store:
 # Built-in imports
 import os
 import json
+import logging
 import shutil
 from collections import namedtuple
 
@@ -44,20 +45,13 @@ from collections import namedtuple
 from . import utils
 from . import compress
 from . import structure
-from . import logger
 from . import configurations
 
 
 __version__ = "0.0.1"
 __author__ = "Gahan Saraiya"
 
-log = logger.settings.logger  # logger utility
-for handler in log.handlers:
-  if hasattr(handler, "baseFilename"):
-    handler.baseFilename = os.path.join(os.path.dirname(handler.baseFilename), "firmware_parser_debug.log")
-    handler.setLevel("DEBUG")
-  else:
-    handler.setLevel(logger.CONSOLE_LOG_LEVEL)
+log = logging.getLogger(__name__)
 
 FirmwareVolumeGuid = namedtuple("FirmwareVolumeGuid", ["name", "guid", "method", "description"])
 

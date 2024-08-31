@@ -8,24 +8,20 @@ import time
 import copy
 import binascii
 import importlib
+import logging
+
 
 
 # Custom Imports
 from .common import utils
 from .common import configurations
-from .common import logger
 from .common import compress
-from .common.logger import log
-from .access.stub import stub
-from ._version import __version__
 
-try:
-  from defusedxml import ElementTree as ET
-except ModuleNotFoundError as e:
-  log.warn("Insecure module import used! Please install all the required dependencies by running `pip install -r requirements.txt`")
-  from xml.etree import ElementTree as ET
+from defusedxml import ElementTree as ET
 
-cliaccess = stub.StubAccess("stub")
+log = logging.getLogger(__name__)
+
+cliaccess = None
 FlexConCfgFile = False
 ForceReInitCliAccess = False
 UfsFlag = False

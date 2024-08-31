@@ -7,6 +7,7 @@ import sys
 import time
 import glob
 import copy
+import logging
 
 # Custom Imports
 from . import XmlCliLib as clb
@@ -14,10 +15,12 @@ from . import XmlIniParser as prs
 from .common import utils
 from .common import compress
 from .common import configurations
-from .common.logger import log
+
 
 
 global LogEnabled, FileGuidListDict, FileSystemSaveCount, FwIngredientDict, HiiNvarDict
+
+log = logging.getLogger(__name__)
 
 FwIngredientDict = {}
 FwIngredientDict['FlashDescpValid'] = 0

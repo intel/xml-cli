@@ -4,18 +4,15 @@
 import os
 import ctypes
 import binascii
+import logging
 from collections import OrderedDict
 
 # Custom imports
 from .. import XmlCliLib as clb
 from . import utils
-from . import logger
-from . import structure
 
-__author__ = "Gahan Saraiya"
 
-settings = logger.settings
-log = settings.logger
+log = logging.getLogger(__name__)
 
 NVAR_OPERATIONS = {
   "get": "0x0",

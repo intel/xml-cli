@@ -2,20 +2,15 @@
 
 # Built-in imports
 import ctypes
+import logging
 from collections import namedtuple
 
 # custom imports
 from . import utils
-from .logger import log
-try:
-  from ..restricted.structure_restricted import *
-except ModuleNotFoundError as e:
-  DescriptorRegion = None
 
+DescriptorRegion = None
 
-__version__ = "0.0.1"
-__author__ = "Gahan Saraiya"
-
+log = logging.getLogger(__name__)
 
 ########################################################################################################################
 # BEGIN:CONSTANTS ######################################################################################################

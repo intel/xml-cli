@@ -12,7 +12,7 @@ import ctypes
 import binascii
 import platform
 import warnings
-
+import logging
 
 from xml.etree import ElementTree
 from collections import namedtuple
@@ -20,16 +20,11 @@ from collections import defaultdict
 from collections import OrderedDict
 
 # Custom imports
-from .logger import log
+
 from .configurations import XMLCLI_CONFIG, ENCODING, XMLCLI_DIR, OUT_DIR, PY3, STATUS_CODE_RECORD_FILE
+from defusedxml import ElementTree as ET
 
-try:
-  from defusedxml import ElementTree as ET
-except ModuleNotFoundError as e:
-  log.warn("Insecure module import used! Please install all the required dependencies by running `pip install -r requirements.txt`")
-  from xml.etree import ElementTree as ET
-
-__author__ = "Gahan Saraiya"
+log = logging.getLogger(__name__)
 
 ###############################################################################
 # START: Toggle for parser Configuration ######################################

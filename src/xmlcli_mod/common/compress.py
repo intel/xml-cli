@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Built-in imports
+import logging
 import os
 import sys
 import shlex
@@ -9,12 +10,10 @@ from datetime import datetime
 
 # Custom imports
 from . import utils
-from . import logger
 from . import configurations
 
-__author__ = "Gahan Saraiya"
 
-log = logger.settings.logger
+log = logging.getLogger(__name__)
 
 COMPRESSION_GUIDS = [
   "ee4e5898-3914-4259-9d6edc7bd79403cf",

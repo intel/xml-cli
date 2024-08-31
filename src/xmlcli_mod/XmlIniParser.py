@@ -8,17 +8,14 @@ __author__ = ['Amol Shinde', 'Gahan Saraiya']
 import os
 import re
 import binascii
-
+import logging
 
 # Custom Imports
-from .common.logger import log
 from . import XmlCliLib as clb
 
-try:
-  from defusedxml import ElementTree as ET
-except ModuleNotFoundError as e:
-  log.warn("Insecure module import used! Please install all the required dependencies by running `pip install -r requirements.txt`")
-  from xml.etree import ElementTree as ET
+from defusedxml import ElementTree as ET
+
+log = logging.getLogger(__name__)
 
 # Global variable
 # -------------------
