@@ -237,7 +237,7 @@ def is_exe_available(interface_type):
   return status
 
 
-def _setCliAccess(req_access=None):
+def setCliAccess(req_access=None):
   global cliaccess, InterfaceType, _isExeAvailable, LastErrorSig
   if req_access != None:
     InterfaceType = req_access
@@ -262,7 +262,7 @@ def _setCliAccess(req_access=None):
 def _checkCliAccess():
   global cliaccess, ForceReInitCliAccess
   if ((cliaccess == None) or (ForceReInitCliAccess)):
-    _setCliAccess()
+    setCliAccess()
 
 
 def haltcpu(delay=0):
@@ -1948,7 +1948,7 @@ def get_bin_file(access_method, **kwargs):
     log.error(err_msg)
     raise Exception(err_msg)
   else:
-    _setCliAccess(access_method)
+    setCliAccess(access_method)
     status = InitInterface()
     log.debug("Status of XmlCli (init interface..): {}".format(status))
     start = memory_size - max_bios_size  # start address of chunk to parse bios region

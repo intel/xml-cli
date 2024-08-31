@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 class XmlCli:
     def __init__(self)->None:
         self.xml_knobs = None
-        xmlclilib._setCliAccess("Linux")
+        xmlclilib.setCliAccess("Linux")
         xmlcli_not_supported = xmlclilib.ConfXmlCli()
         if xmlcli_not_supported:
             raise XmlCliNotSupported(xmlcli_not_supported)
