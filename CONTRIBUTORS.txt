@@ -1,0 +1,8 @@
+Original XmlCli Authors
+------------------------
+* Shinde, Amol <amol.shinde@intel.com>
+* Saraiya, Gahan <gahan.saraiya@intel.com>
+
+Contributors
+------------
+* Emptage, Nick <nick.emptage@intel.com>
