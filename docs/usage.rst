@@ -1,5 +1,0 @@
-=====
-Usage
-=====
-
-.. include:: ../README.md
