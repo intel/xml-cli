@@ -42,7 +42,7 @@ TOOL_DIR = os.path.join(XMLCLI_DIR, "tools")
 TEMP_DIR = os.path.join(tempfile.gettempdir(), "XmlCliOut")
 
 # Configuration parser object
-CONFIG_FILE = os.path.join(XMLCLI_DIR, "xmlcli.config")
+CONFIG_FILE = os.path.join(XMLCLI_DIR, "xmlcli_mod.config")
 XMLCLI_CONFIG = config_read(CONFIG_FILE)
 
 ENCODING = XMLCLI_CONFIG.get("GENERAL_SETTINGS", "ENCODING")

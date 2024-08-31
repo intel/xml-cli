@@ -193,7 +193,7 @@ class CliLib(object):
       if os.path.exists(access_config_location):
         self.access_config = configurations.config_read(access_config_location)
         access_file = self.access_config.get(access_file_name.upper(), "file")  # Source file of access method
-        access_file_location = "xmlcli.access.{}.{}".format(access_file_name, os.path.splitext(access_file)[0])
+        access_file_location = "xmlcli_mod.access.{}.{}".format(access_file_name, os.path.splitext(access_file)[0])
         access_file = importlib.import_module(access_file_location)  # Import access method
         method_class = self.access_config.get(access_file_name.upper(), "method_class")
         self.access_instance = getattr(access_file, method_class)(access_file_name)  # create instance of Access method class

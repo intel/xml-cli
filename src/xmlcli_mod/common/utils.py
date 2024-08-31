@@ -354,7 +354,7 @@ def round_up(number, multiple=8):
   return (number + multiple - 1) & (-multiple)
 
 
-def generate_unique_id(string_format="xmlcli"):
+def generate_unique_id(string_format="xmlcli_mod"):
   guid = str(uuid.uuid4())
   formatted_guid = guid_formatter(guid=guid, string_format=string_format)
   return formatted_guid
@@ -568,7 +568,7 @@ def guid_formatter(guid, string_format="default"):
   if hyphens_in_guid > 3:
     guid = ''.join(guid.rsplit('-', hyphens_in_guid - 3))
   guid = guid.lower()
-  if string_format == "xmlcli":
+  if string_format == "xmlcli_mod":
     guid_lis = guid.split("-")
     guid = '-'.join(
       f'0x{i}'

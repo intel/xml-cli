@@ -64,7 +64,7 @@ def create_nvar_structure(nvar_name_length=1, data_length=0):
       return f"{self.nvar_name}_{self.get_guid()}"
 
     def get_guid(self):
-      return utils.guid_formatter(self.guid.get_str(), string_format="xmlcli")
+      return utils.guid_formatter(self.guid.get_str(), string_format="xmlcli_mod")
 
     def get_attribute_string(self):
       return get_attribute_string(self.get_value("attributes"))
@@ -331,7 +331,7 @@ def get_set_var(operation="get", xml_file=None, knob_string="", nvar_name="", nv
     raise NvarException(err_msg, error_code=clb.LastErrorSig)
 
   if operation == "getall":
-    # system must have xmlcli BIOS version >= 5
+    # system must have xmlcli_mod BIOS version >= 5
     log.debug(f"Operation: {operation} to be executed")
   else:
     request_buffer, nvar_dict = create_nvar_request_buffer(operation=operation, xml_file=xml_file, knob_string=knob_string, name=nvar_name,

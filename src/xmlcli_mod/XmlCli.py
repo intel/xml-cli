@@ -13,14 +13,6 @@ from . import XmlIniParser as prs
 from . import UefiFwParser as fwp
 from .common.uefi_nvar import get_set_var
 
-if not configurations.PERFORMANCE:
-  # Optional helper utilities
-  from .modules import helpers
-  from .common import utils
-
-  utils.run_cleaner()
-
-
 BootOrderDict = {}
 
 
@@ -267,7 +259,7 @@ def GetSetVar(Operation='get', xmlfile=0, KnobString='', NvarName='', NvarGuidSt
     xml_file=xmlfile,
     knob_string=KnobString,
     nvar_name=NvarName,
-    nvar_guid=utils.guid_formatter(NvarGuidStr, string_format="xmlcli"),
+    nvar_guid=utils.guid_formatter(NvarGuidStr, string_format="xmlcli_mod"),
     nvar_attrib=NvarAttri,
     nvar_size=NvarSize,
     nvar_data=NvarDataString,
@@ -336,7 +328,7 @@ def CreateTmpIniFile(KnobString):
     with open(clb.TmpKnobsIniFile, 'w') as IniFilePart:
       IniFilePart.write(
         ';-----------------------------------------------------------------\n'
-        '; FID XmlCli contact: xmlcli@intel.com\n'
+        '; FID XmlCli contact: xmlcli_mod@intel.com\n'
         '; XML Shared MailBox settings for XmlCli based setup\n'
         '; The name entry here should be identical as the name from the XML file (retain the case)\n'
         ';-----------------------------------------------------------------\n'

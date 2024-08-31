@@ -411,7 +411,7 @@ def generate_bios_knobs_config(xml_file, flexcon_cfg_file, knobs_ini_file, build
   knob_start = 0
   i = 0
   ini_content = ';-------------------------------------------------\n'
-  '; BIOS contact: xmlcli@intel.com\n'
+  '; BIOS contact: xmlcli_mod@intel.com\n'
   '; XML Shared MailBox settings for BIOS CLI based setup\n'
   '; The name entry here should be identical as the name from the XML file (retain the case)\n'
   ';-------------------------------------------------\n'
@@ -588,7 +588,7 @@ def generate_bios_config_ini(xml_file, bios_config_file, knobs_ini_file='', mode
   if mode.lower() == 'genknobsini':
     log.info('Generating BiosKnobs.ini file from BiosConf Text File, will be writing only delta knobs')
     ini_content = ';-------------------------------------------------\n'
-    '; BIOS contact: xmlcli@intel.com\n'
+    '; BIOS contact: xmlcli_mod@intel.com\n'
     '; XML Shared MailBox settings for BIOS CLI based setup\n'
     '; The name entry here should be identical as the name from the XML file (retain the case)\n'
     ';-------------------------------------------------\n'
@@ -639,7 +639,7 @@ def generate_all_knobs_ini(xml_file, all_knobs_ini):
   """
   xml_tree = ET.parse(xml_file)
   ini_content = ';-------------------------------------------------\n'
-  '; BIOS contact: xmlcli@intel.com\n'
+  '; BIOS contact: xmlcli_mod@intel.com\n'
   '; XML Shared MailBox settings for BIOS CLI based setup\n'
   '; The name entry here should be identical as the name from the XML file (retain the case)\n'
   ';-------------------------------------------------\n'

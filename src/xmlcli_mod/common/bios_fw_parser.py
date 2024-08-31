@@ -6,7 +6,7 @@ BIOS region from given binary file.
 Syntax:
 
 ```
-from xmlcli.common import bios_fw_parser
+from xmlcli_mod.common import bios_fw_parser
 
 bios_image = "absolute-path/to/bios-image.rom"
 
