@@ -243,7 +243,7 @@ def _setCliAccess(req_access=None):
     log.error('**** Error initializing the given Interface Type ****')
   else:
     LastErrorSig = 0x0000
-  log.result(f'****  Using \"{InterfaceType}\" mode as Interface  ****')
+  log.debug(f'****  Using \"{InterfaceType}\" mode as Interface  ****')
 
 
 def _checkCliAccess():
@@ -364,30 +364,30 @@ def memdump(address, size, unit=1):
   memsave(TempDataBinFile, address, size)
   with open(TempDataBinFile, 'rb') as TempData:
     ListBuff = list(TempData.read())
-  log.result('________________________________________________________________________________')
+  log.debug('________________________________________________________________________________')
   if unit == 1:
-    log.result('       Address | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F |')
-    log.result('---------------|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|')
+    log.debug('       Address | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F |')
+    log.debug('---------------|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|')
   elif unit == 2:
-    log.result('       Address |   0   |   2   |   4   |   6   |   8   |   A   |   C   |   E   |')
-    log.result('---------------|-------|-------|-------|-------|-------|-------|-------|-------|')
+    log.debug('       Address |   0   |   2   |   4   |   6   |   8   |   A   |   C   |   E   |')
+    log.debug('---------------|-------|-------|-------|-------|-------|-------|-------|-------|')
   elif unit == 4:
-    log.result('       Address |       0       |       4       |       8       |       C       |')
-    log.result('---------------|---------------|---------------|---------------|---------------|')
+    log.debug('       Address |       0       |       4       |       8       |       C       |')
+    log.debug('---------------|---------------|---------------|---------------|---------------|')
   elif unit == 8:
-    log.result('       Address |               0               |               8               |')
-    log.result('---------------|-------------------------------|-------------------------------|')
+    log.debug('       Address |               0               |               8               |')
+    log.debug('---------------|-------------------------------|-------------------------------|')
   CurAddr = address
   for count in range (0, int(size/0x10)):
     Value = ListBuff[(count*0x10):((count*0x10)+16)]
     if unit == 1:
-      log.result(' %13s |%02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X |' %(('0x%lX' %CurAddr), Value[0], Value[1], Value[2], Value[3], Value[4], Value[5], Value[6], Value[7], Value[8], Value[9], Value[10], Value[11], Value[12], Value[13], Value[14], Value[15]))
+      log.debug(' %13s |%02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X  %02X |' %(('0x%lX' %CurAddr), Value[0], Value[1], Value[2], Value[3], Value[4], Value[5], Value[6], Value[7], Value[8], Value[9], Value[10], Value[11], Value[12], Value[13], Value[14], Value[15]))
     elif unit == 2:
-      log.result(' %13s |0x%02X%02X  0x%02X%02X  0x%02X%02X  0x%02X%02X  0x%02X%02X  0x%02X%02X  0x%02X%02X  0x%02X%02X |' %(('0x%lX' %CurAddr), Value[1], Value[0], Value[3], Value[2], Value[5], Value[4], Value[7], Value[6], Value[9], Value[8], Value[11], Value[10], Value[13], Value[12], Value[15], Value[14]))
+      log.debug(' %13s |0x%02X%02X  0x%02X%02X  0x%02X%02X  0x%02X%02X  0x%02X%02X  0x%02X%02X  0x%02X%02X  0x%02X%02X |' %(('0x%lX' %CurAddr), Value[1], Value[0], Value[3], Value[2], Value[5], Value[4], Value[7], Value[6], Value[9], Value[8], Value[11], Value[10], Value[13], Value[12], Value[15], Value[14]))
     elif unit == 4:
-      log.result(' %13s |   0x%02X%02X%02X%02X      0x%02X%02X%02X%02X      0x%02X%02X%02X%02X      0x%02X%02X%02X%02X  |' %(('0x%lX' %CurAddr), Value[3], Value[2], Value[1], Value[0], Value[7], Value[6], Value[5], Value[4], Value[11], Value[10], Value[9], Value[8], Value[15], Value[14], Value[13], Value[12]))
+      log.debug(' %13s |   0x%02X%02X%02X%02X      0x%02X%02X%02X%02X      0x%02X%02X%02X%02X      0x%02X%02X%02X%02X  |' %(('0x%lX' %CurAddr), Value[3], Value[2], Value[1], Value[0], Value[7], Value[6], Value[5], Value[4], Value[11], Value[10], Value[9], Value[8], Value[15], Value[14], Value[13], Value[12]))
     elif unit == 8:
-      log.result(' %13s |       0x%02X%02X%02X%02X%02X%02X%02X%02X             0x%02X%02X%02X%02X%02X%02X%02X%02X       |' %(('0x%lX' %CurAddr), Value[7], Value[6], Value[5], Value[4], Value[3], Value[2], Value[1], Value[0], Value[15], Value[14], Value[13], Value[12], Value[11], Value[10], Value[9], Value[8]))
+      log.debug(' %13s |       0x%02X%02X%02X%02X%02X%02X%02X%02X             0x%02X%02X%02X%02X%02X%02X%02X%02X       |' %(('0x%lX' %CurAddr), Value[7], Value[6], Value[5], Value[4], Value[3], Value[2], Value[1], Value[0], Value[15], Value[14], Value[13], Value[12], Value[11], Value[10], Value[9], Value[8]))
     CurAddr = CurAddr + 0x10
 
   RemBytes = int(size%0x10)
@@ -409,7 +409,7 @@ def memdump(address, size, unit=1):
       for cnt in range(0x0,int(RemBytes/8)):
         Index = cnt*8
         ValueStr = ValueStr + '       0x%02X%02X%02X%02X%02X%02X%02X%02X      ' %(Value[Index+7], Value[Index+6], Value[Index+5], Value[Index+4], Value[Index+3], Value[Index+2], Value[Index+1], Value[Index])
-    log.result(f' {(f"0x{CurAddr:X}"):>13} |{ValueStr}')
+    log.debug(f' {(f"0x{CurAddr:X}"):>13} |{ValueStr}')
 
 
 def memread(address, size):
@@ -612,24 +612,24 @@ def clearcmos():
 # read all Cmos locations from 0 to 0xFF
 def readallcmos():
   Value = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-  log.result('Reading CMOS')
-  log.result('    |--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|')
-  log.result('Addr|00|01|02|03|04|05|06|07|08|09|0A|0B|0C|0D|0E|0F|')
-  log.result('----|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|')
+  log.debug('Reading CMOS')
+  log.debug('    |--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|')
+  log.debug('Addr|00|01|02|03|04|05|06|07|08|09|0A|0B|0C|0D|0E|0F|')
+  log.debug('----|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|')
   for i in range(0x0,0x8,1):
     for j in range(0x0,0x10,1):
       writeIO(0x70, 1, ((i<<4) + j) )
       Value[j] = readIO(0x71, 1)
-    log.result(
+    log.debug(
       f' {(i << 4):2X} |{Value[0]:2X} {Value[1]:2X} {Value[2]:2X} {Value[3]:2X} {Value[4]:2X} {Value[5]:2X} {Value[6]:2X} {Value[7]:2X} {Value[8]:2X} {Value[9]:2X} {Value[10]:2X} {Value[11]:2X} {Value[12]:2X} {Value[13]:2X} {Value[14]:2X} {Value[15]:2X}|')
-  log.result(' ---|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|')
+  log.debug(' ---|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|')
   for i in range(0x8,0x10,1):
     for j in range(0x0,0x10,1):
       writeIO(0x72, 1, ((i<<4) + j) )
       Value[j] = readIO(0x73, 1)
-    log.result(
+    log.debug(
       f' {(i << 4):2X} |{Value[0]:2X} {Value[1]:2X} {Value[2]:2X} {Value[3]:2X} {Value[4]:2X} {Value[5]:2X} {Value[6]:2X} {Value[7]:2X} {Value[8]:2X} {Value[9]:2X} {Value[10]:2X} {Value[11]:2X} {Value[12]:2X} {Value[13]:2X} {Value[14]:2X} {Value[15]:2X}|')
-  log.result(' ---|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|')
+  log.debug(' ---|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|')
 
 
 def ReadBuffer(inBuffer, offset, size, inType):
@@ -783,7 +783,7 @@ def ConfXmlCli(SkipEnable=0):
   LastErrorSig = 0x0000
   InitInterface()
   DRAM_MbAddr = GetDramMbAddr()  # Get DRam MAilbox Address from Cmos.
-  log.result(f'CLI Spec Version = {GetCliSpecVersion(DRAM_MbAddr)}')
+  log.debug(f'CLI Spec Version = {GetCliSpecVersion(DRAM_MbAddr)}')
   log.debug(f'DRAM_MbAddr = 0x{DRAM_MbAddr:X}')
   Status = 0
   if DRAM_MbAddr == 0x0:
@@ -811,7 +811,7 @@ def ConfXmlCli(SkipEnable=0):
       Status = 3
       LastErrorSig = 0xC19E  # XmlCli Support not Enabled
   else:
-    log.result('XmlCli support is Enabled..')
+    log.debug('XmlCli support is Enabled..')
     Status = 0
   CloseInterface()
   return Status
@@ -1172,7 +1172,7 @@ def IsXmlGenerated():
   Status = 0
   InitInterface()
   DRAM_MbAddr = GetDramMbAddr() # Get DRam Mailbox Address from Cmos.
-  log.result(f'CLI Spec Version = {GetCliSpecVersion(DRAM_MbAddr)}')
+  log.debug(f'CLI Spec Version = {GetCliSpecVersion(DRAM_MbAddr)}')
   log.debug(f'DRAM_MbAddr = 0x{DRAM_MbAddr:X}')
   if (DRAM_MbAddr == 0x0):
     log.error('Dram Shared Mailbox not Valid, hence exiting')
@@ -1186,7 +1186,7 @@ def IsXmlGenerated():
     LastErrorSig = 0x8AD0  # Xml Address is Zero
     return 1
   if(isxmlvalid(XmlAddr,XmlSize)):
-    log.result('Xml Is Generated and it is Valid')
+    log.debug('Xml Is Generated and it is Valid')
   else:
     log.error(f'XML is not valid or not yet generated XmlAddr = 0x{XmlAddr:X}, XmlSize = 0x{XmlSize:X}')
     Status = 1
@@ -1545,7 +1545,7 @@ def SaveXmlLite(filename=PlatformConfigLiteXml, Operation='savexml', UserKnobsDi
   CLI_ReqBuffAddr = readclireqbufAddr(DramSharedMBbuf)  # Get CLI Request Buffer Address
   CLI_ResBuffAddr = readcliresbufAddr(DramSharedMBbuf)  # Get CLI Response Buffer Address
   if Operation != "savexml":
-    log.result(f'CLI Spec Version = {GetCliSpecVersion(DRAM_MbAddr)}')
+    log.debug(f'CLI Spec Version = {GetCliSpecVersion(DRAM_MbAddr)}')
     log.info(f'CLI Request Buffer Addr = 0x{CLI_ReqBuffAddr:X}   CLI Response Buffer Addr = 0x{CLI_ResBuffAddr:X}')
   if ( (CLI_ReqBuffAddr == 0) or (CLI_ResBuffAddr == 0) ):
     if Operation != "savexml":
@@ -1665,7 +1665,7 @@ def SaveXml(filename=None, ITPOptimz=0, MbAddr=0, XmlAddr=0, XmlSize=0):
     DRAM_MbAddr = GetDramMbAddr() # Get DRam MAilbox Address from Cmos.
   else:
     DRAM_MbAddr = MbAddr
-  log.result(f'CLI Spec Version = {GetCliSpecVersion(DRAM_MbAddr)}')
+  log.debug(f'CLI Spec Version = {GetCliSpecVersion(DRAM_MbAddr)}')
   log.debug(f'DRAM_MbAddr = 0x{DRAM_MbAddr:X}')
   if (DRAM_MbAddr == 0x0):
     log.error('Dram Shared Mailbox not Valid, hence exiting')
@@ -1692,7 +1692,7 @@ def SaveXml(filename=None, ITPOptimz=0, MbAddr=0, XmlAddr=0, XmlSize=0):
         PacketHdr  = int(memread(PacketAddr, 8))
         PacketSize = ((PacketHdr >> 40) & 0xFFFFFF)
         if ( ((PacketHdr & 0xFFFFFFFFFF) == 0x414d5a4c24) and (PacketSize != 0) ):  # cmp with $LZMA
-          log.result('Found LZMA Compressed XML, Downloading it')
+          log.debug('Found LZMA Compressed XML, Downloading it')
           TempInFile = os.path.join(TempFolder, "GbtLzC.bin")
           TempOutFile = os.path.join(TempFolder, "GbtPc.xml")
           memsave(TempInFile, (PacketAddr+8), int(PacketSize))
@@ -1700,14 +1700,14 @@ def SaveXml(filename=None, ITPOptimz=0, MbAddr=0, XmlAddr=0, XmlSize=0):
             compress.lzma_decompress(TempInFile, TempOutFile)
             RemoveFile(TempInFile)
             if(os.path.getsize(os.path.join(TempFolder, "GbtPc.xml"))):
-              log.result('LZMA Compressed XML Decompressed Successfully')
+              log.debug('LZMA Compressed XML Decompressed Successfully')
               ComprXmlFound = True
               break
           except:
-            log.result('Decompression Failed!, falling back to regular XML download.')
+            log.debug('Decompression Failed!, falling back to regular XML download.')
             ComprXmlFound = False
         if ( ((PacketHdr & 0xFFFFFFFFFF) == 0x434F4E5424) and (PacketSize != 0) ):  # cmp with $TNOC
-          log.result('Found Tiano Compressed XML, Downloading it')
+          log.debug('Found Tiano Compressed XML, Downloading it')
           TempInFile = os.path.join(TempFolder, "GbtTianoC.bin")
           TempOutFile = os.path.join(TempFolder, "GbtPc.xml")
           memsave(TempInFile, (PacketAddr+8), int(PacketSize))
@@ -1715,11 +1715,11 @@ def SaveXml(filename=None, ITPOptimz=0, MbAddr=0, XmlAddr=0, XmlSize=0):
             utils.system_call(cmd_lis=[TianoCompressUtility, "-d", "-q", TempInFile, "-o", TempOutFile])
             RemoveFile(TempInFile)
             if(os.path.getsize(os.path.join(TempFolder, "GbtPc.xml"))):
-              log.result('Tiano Compressed XML Decompressed Successfully')
+              log.debug('Tiano Compressed XML Decompressed Successfully')
               ComprXmlFound = True
               break
           except:
-            log.result('Decompression Failed!, falling back to regular XML download.')
+            log.debug('Decompression Failed!, falling back to regular XML download.')
             ComprXmlFound = False
         PacketAddr = ((PacketAddr+8+PacketSize+0xFFF) & 0xFFFFF000)
     if (ComprXmlFound):
@@ -1730,15 +1730,15 @@ def SaveXml(filename=None, ITPOptimz=0, MbAddr=0, XmlAddr=0, XmlSize=0):
       with open(filename, 'wb') as NewXmlFile:  # opening for writing
         NewXmlFile.write(bytearray(XmlListBuff))
     else:
-      log.result('Compressed XML is not supported, Downloading Regular XML')
+      log.debug('Compressed XML is not supported, Downloading Regular XML')
       if((InterfaceType != 'itpii') and (InterfaceType != 'simics') and (InterfaceType != 'ltb') and (InterfaceType != 'svlegitp')):
         ITPOptimz = 0
       if ( (XmlCmp(filename, XmlAddr) == False) or (ITPOptimz == 0) ):
-        log.result('Host XML did not exist or is different from Target XML, downloading Target XML..')
+        log.debug('Host XML did not exist or is different from Target XML, downloading Target XML..')
         memsave(filename, XmlAddr, int(XmlSize))  # saves complete xml
       else:
-        log.result('Target XML is same as the one Pointed to, skipping XML download')
-    log.result(f'Saved XML Data as {filename}')
+        log.debug('Target XML is same as the one Pointed to, skipping XML download')
+    log.debug(f'Saved XML Data as {filename}')
   else:
     log.error(f'XML is not valid or not yet generated XmlAddr = 0x{XmlAddr:X}, XmlSize = 0x{XmlSize:X}')
     Status = 1
@@ -1815,7 +1815,7 @@ def getBiosDetails():
   BiosTimestamp = ''
   InitInterface()
   DRAM_MbAddr = GetDramMbAddr()  # Get DRam Mailbox Address from Cmos.
-  log.result(f'CLI Spec Version = {GetCliSpecVersion(DRAM_MbAddr)}')
+  log.debug(f'CLI Spec Version = {GetCliSpecVersion(DRAM_MbAddr)}')
   log.debug(f'DRAM_MbAddr = 0x{DRAM_MbAddr:X}')
   if DRAM_MbAddr == 0x0:
     log.error('Dram Shared Mailbox not Valid, hence exiting')
@@ -1838,7 +1838,7 @@ def getBiosDetails():
         for j in range(0x0, 0x80, 1):  # assuming max Platform name size of 128 chars
           if ReadBuffer(XmlEntryBuff, i + 16 + j, 1, HEX) == 0x22:  # save till next '
             Platformname = ReadBuffer(XmlEntryBuff, i + 16, j, ASCII)  # return Knob name
-            log.result(f'Platform Name = {Platformname}')
+            log.debug(f'Platform Name = {Platformname}')
             break
       if ((BiosDetailstmp == '<CPUSVBIOS') or (BiosDetailstmp[0:7] == '<SVBIOS') or (BiosDetailstmp[0:5] == '<BIOS')
       ) and (BiosName == '') and (BiosTimestamp == ''):  # compare with name='
@@ -1855,13 +1855,13 @@ def getBiosDetails():
             for k in range(0x0, 0x80, 1):  # assuming max BIOS name size of 128 chars
               if ReadBuffer(XmlEntryBuff, i + AtriLen + j + 9 + k, 1, HEX) == 0x22:  # save till next '
                 BiosName = ReadBuffer(XmlEntryBuff, i + AtriLen + j + 9, k, ASCII)  # return Knob name
-                log.result(f'Bios Version = {BiosName}')
+                log.debug(f'Bios Version = {BiosName}')
                 break
           if (BiosTimestamptmp == 'TSTAMP=') and (BiosTimestamp == ''):
             for k in range(0x0, 0x80, 1):  # assuming max BIOS name size of 128 chars
               if ReadBuffer(XmlEntryBuff, i + AtriLen + j + 8 + k, 1, HEX) == 0x22:  # save till next '
                 BiosTimestamp = ReadBuffer(XmlEntryBuff, i + AtriLen + j + 8, k, ASCII)  # return Knob name
-                log.result(f'Bios Timestamp = {BiosTimestamp}')
+                log.debug(f'Bios Timestamp = {BiosTimestamp}')
                 break
   CloseInterface()
   return Platformname, BiosName, BiosTimestamp
@@ -1903,7 +1903,7 @@ def getEfiCompatibleTableBase():
       BaseAddress = 0xF0000+Index;
       log.debug(f'Found EfiCompatibleTable Signature at 0x{BaseAddress:X}')
       return BaseAddress
-  log.result(hex(Index))
+  log.debug(hex(Index))
   LastErrorSig = 0xEFC9  # EfiCompatibleTable Not Found
   return 0
 
@@ -2014,18 +2014,18 @@ def PrintE820Table ():
   EfiCompatibleTableBase = getEfiCompatibleTableBase()
   E820Ptr = memread(EfiCompatibleTableBase+0x22, 4)
   Size = memread(EfiCompatibleTableBase+0x26, 4)
-  log.result( ',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,')
-  log.result( 'E820[no]: Start Block Address ---- End Block Address , Type = Mem Type')
-  log.result( '``````````````````````````````````````````````````````````````````````')
+  log.debug( ',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,')
+  log.debug( 'E820[no]: Start Block Address ---- End Block Address , Type = Mem Type')
+  log.debug( '``````````````````````````````````````````````````````````````````````')
   while (1):
     BaseAddr = memread(E820Ptr+Offset, 8)
     Length = memread(E820Ptr+Offset+8, 8)
     Type =  memread(E820Ptr+Offset+16, 4)
-    log.result(f'E820[{Index:2d}]:  0x{BaseAddr:16X} ---- 0x{(BaseAddr + Length):<16X}, Type = 0X{Type:x} ')
+    log.debug(f'E820[{Index:2d}]:  0x{BaseAddr:16X} ---- 0x{(BaseAddr + Length):<16X}, Type = 0X{Type:x} ')
     E820TableList[Index] = [BaseAddr, Length, Type]
     Index = Index + 1
     Offset = Offset + 20
     if (Offset >= Size):
       break
-  log.result(',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,')
+  log.debug(',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,')
   return E820TableList

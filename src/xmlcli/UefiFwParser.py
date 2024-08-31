@@ -215,7 +215,7 @@ def PrintLog(String, LogFile):
       Tab = Tab + '   |'
     String = '|' + Tab + String
     if(FwpPrintEn):
-      log.result(f'{String}')
+      log.debug(f'{String}')
     if ( (LogFile != 0) and FwpLogEn ):
       LogFile.write(String+'\n')
 
@@ -1613,12 +1613,12 @@ def GetsetBiosKnobsFromBin(BiosBinaryFile=0, BiosOutSufix=0, Operation='genxml',
     for KnobCount in range (0, len(KnobLis)):
       if(KnobLis[KnobCount]['ReqValue'] != KnobLis[KnobCount]['CurValue']):
         VerifyErrCnt = VerifyErrCnt + 1
-        log.result(
+        log.debug(
           f'Verify Fail: Knob = {KnobLis[KnobCount]["KnobName"]}  ExpectedVal = 0x{KnobLis[KnobCount]["ReqValue"]:X}    CurrVal = 0x{KnobLis[KnobCount]["CurValue"]:X} ')
     if (VerifyErrCnt == 0):
-      log.result('Verify Passed!')
+      log.debug('Verify Passed!')
     else:
-      log.result('Verify Failed!')
+      log.debug('Verify Failed!')
       ReturnVal = 1
       clb.LastErrorSig = 0xC42F  # XmlCli Knobs Verify Operation Failed
   return ReturnVal
@@ -1683,7 +1683,7 @@ def FlashAcmInfo(UefiFwBinListBuff, PrintEn=True):
       AcmBase = FitTableEntries[count].get('Address', 0)
       break
   if(AcmBase == 0):
-    log.result('ACM Entry not Found in FIT Table!')
+    log.debug('ACM Entry not Found in FIT Table!')
     return
   ACM_ModuleId = clb.ReadBios(UefiFwBinListBuff, BinSize, AcmBase+0x0C, 4)
   ACM_VendorId = clb.ReadBios(UefiFwBinListBuff, BinSize, AcmBase+0x10, 4)

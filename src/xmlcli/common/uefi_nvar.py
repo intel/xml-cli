@@ -80,8 +80,8 @@ def create_nvar_structure(nvar_name_length=1, data_length=0):
       return self.array_to_int(data)
 
     def display_data(self, var_no=0, min_adjust=70):
-      log.result("#" * min_adjust)
-      log.result(f"{f' Displaying Data as Requested[NVAR:{var_no:0^2}] ' :#^{min_adjust}}")
+      log.debug("#" * min_adjust)
+      log.debug(f"{f' Displaying Data as Requested[NVAR:{var_no:0^2}] ' :#^{min_adjust}}")
       out_data = f'Name       = {self.get_value("name")}\n ' \
                  f'Guid       = {self.get_guid()}\n' \
                  f'Size       = {self.get_value("size")}\n' \
@@ -89,7 +89,7 @@ def create_nvar_structure(nvar_name_length=1, data_length=0):
                  f'Operation  = {self.get_value("operation")}\n' \
                  f'Status     = {self.get_value("status")}\n' \
                  f'Data       = {self.get_nvar_data()}'
-      log.result(out_data)
+      log.debug(out_data)
 
   return NvarDetails()
 

@@ -243,13 +243,13 @@ class UefiParser(object):
     file_size = kwargs.get("file_size", self.bin_file_size)
     bin_dir = kwargs.get("bin_dir", self.bin_dir)
     buffer = kwargs.get("buffer", self.buffer)
-    log.result(f"{'Reading Binary':*^80}")
-    log.result(f"Reading file of size: 0x{self.bin_file_size:x} from 0x{buffer_pointer:x}")
+    log.debug(f"{'Reading Binary':*^80}")
+    log.debug(f"Reading file of size: 0x{self.bin_file_size:x} from 0x{buffer_pointer:x}")
     bios_size = file_size - buffer_pointer
-    log.result(f"Size of BIOS: {bios_size} bytes ({bios_size // 1024} KB)")
+    log.debug(f"Size of BIOS: {bios_size} bytes ({bios_size // 1024} KB)")
 
     self.output.update(self.parse_firmware_volume(buffer, buffer_pointer, end_point=file_size, bin_dir=bin_dir))
-    log.result(self.stored_guids)
+    log.debug(self.stored_guids)
     return self.output
 
   def parse_firmware_volume(self, buffer, buffer_pointer, end_point, nesting_level=0, is_compressed=False, **kwargs):

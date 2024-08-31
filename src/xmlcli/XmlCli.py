@@ -28,7 +28,7 @@ def cliProcessKnobs(xmlfilename, inifilename, CmdSubType, ignoreXmlgeneration=Fa
   clb.LastErrorSig = 0x0000
   clb.InitInterface()
   DRAM_MbAddr = clb.GetDramMbAddr() # Get DRam MAilbox Address.
-  log.result(f'CLI Spec Version = {clb.GetCliSpecVersion(DRAM_MbAddr)}')
+  log.debug(f'CLI Spec Version = {clb.GetCliSpecVersion(DRAM_MbAddr)}')
   DramSharedMBbuf = clb.memBlock(DRAM_MbAddr,0x200) # Read/save parameter buffer
 
   Operation = 'Prog'
@@ -79,18 +79,18 @@ def cliProcessKnobs(xmlfilename, inifilename, CmdSubType, ignoreXmlgeneration=Fa
     if(clb.UfsFlag):
       BuffDict,tmpBuff = prs.generate_knobs_data_bin(xmlfilename, inifilename, binfile, Operation)
       if((len(BuffDict) == 0) or (clb.ReadBuffer(tmpBuff, 0, 4, clb.HEX) == 0)) and (CmdSubType != clb.CLI_KNOB_RESTORE_MODIFY):
-        log.result('Request buffer is Empty, No Action required, Aborting...')
+        log.debug('Request buffer is Empty, No Action required, Aborting...')
         clb.CloseInterface()
         clb.LastErrorSig = 0xC4B0  # XmlCli Request Buffer Empty no action needed on XmlCli Command
         return 0
       SmiLoopCount = len(BuffDict)
-      log.result(f'Number of Nvars to be processed = {SmiLoopCount:d}')
+      log.debug(f'Number of Nvars to be processed = {SmiLoopCount:d}')
       if (CmdSubType == clb.CLI_KNOB_READ_ONLY):
         SmiLoopCount = 1
     else:
       tmpBuff = prs.parse_cli_ini_xml(xmlfilename, inifilename, binfile)
       if((len(tmpBuff) == 0) or (clb.ReadBuffer(tmpBuff, 0, 4, clb.HEX) == 0)) and (CmdSubType != clb.CLI_KNOB_RESTORE_MODIFY):
-        log.result('Request buffer is Empty, No Action required, Aborting...')
+        log.debug('Request buffer is Empty, No Action required, Aborting...')
         clb.CloseInterface()
         clb.LastErrorSig = 0xC4B0  # XmlCli Request Buffer Empty no action needed on XmlCli Command
         return 0
@@ -111,7 +111,7 @@ def cliProcessKnobs(xmlfilename, inifilename, CmdSubType, ignoreXmlgeneration=Fa
           if(loopCnt == SmiCount):
             break
           loopCnt = loopCnt + 1
-        log.result(
+        log.debug(
           f'Processing NVARId = {Index:d} CurrentLoopCount={SmiCount:d} RemCount={(SmiLoopCount - SmiCount - 1):d}')
         NewBinfile = os.path.join(clb.TempFolder, 'biosKnobsdata_%d.bin' %Index)
         log.info(f'Req Buffer Bin file used is {NewBinfile}')
@@ -143,7 +143,7 @@ def cliProcessKnobs(xmlfilename, inifilename, CmdSubType, ignoreXmlgeneration=Fa
     ResParamSize = ResParamSize + CurParamSize
   #For Loop ends here.
   if (ResParamSize == 0):
-    log.result('BIOS knobs CLI Command ended successfully, CLI Response buffer Parameter size is 0, hence returning..')
+    log.debug('BIOS knobs CLI Command ended successfully, CLI Response buffer Parameter size is 0, hence returning..')
     clb.CloseInterface()
     clb.LastErrorSig = 0xC4E0  # XmlCli Resp Buffer Parameter Size is Zero
     return 0
@@ -153,7 +153,7 @@ def cliProcessKnobs(xmlfilename, inifilename, CmdSubType, ignoreXmlgeneration=Fa
   with open(ResBufFilename, 'wb') as out_file:  # opening for writing
     out_file.write(ResParambuff)
 
-  log.result('BIOS knobs CLI Command ended successfully',)
+  log.debug('BIOS knobs CLI Command ended successfully',)
 
   offsetIn = 4
   Index = 0
@@ -211,13 +211,13 @@ def cliProcessKnobs(xmlfilename, inifilename, CmdSubType, ignoreXmlgeneration=Fa
     NumberOfEntries = NumberOfEntries-1
   create_json(KnobsDict, CmdSubType) # Function call to create json output
   if (PrintResParams):
-    log.result(', see below for the results..')
-    log.result('|--|-----|------------------------------------------|--|-----------|-----------|')
+    log.debug(', see below for the results..')
+    log.debug('|--|-----|------------------------------------------|--|-----------|-----------|')
     if (CmdSubType == clb.CLI_KNOB_LOAD_DEFAULTS):
-      log.result('|VI|Ofset|                 Knob Name                |Sz|PreviousVal|RestoredVal|')
+      log.debug('|VI|Ofset|                 Knob Name                |Sz|PreviousVal|RestoredVal|')
     else:
-      log.result('|VI|Ofset|                 Knob Name                |Sz|   DefVal  |   CurVal  |')
-    log.result('|--|-----|------------------------------------------|--|-----------|-----------|')
+      log.debug('|VI|Ofset|                 Knob Name                |Sz|   DefVal  |   CurVal  |')
+    log.debug('|--|-----|------------------------------------------|--|-----------|-----------|')
     for KnobCount in range (0, len(KnobsDict)):   # read and print the return knobs entry parameters from CLI's response buffer
       if(KnobsDict[KnobCount]['Type'] == 'string'):
         if (KnobsDict[KnobCount]['DefValue'] == 0):
@@ -228,18 +228,18 @@ def cliProcessKnobs(xmlfilename, inifilename, CmdSubType, ignoreXmlgeneration=Fa
           OutStr = ''
         else:
           OutStr = clb.UnHexLiFy(KnobsDict[KnobCount]['OutValue'])[::-1]
-        log.result(
+        log.debug(
           f'|{KnobsDict[KnobCount]["VarId"]:2X}| {KnobsDict[KnobCount]["Offset"]:04X}|{KnobsDict[KnobCount]["KnobName"]:>42}|{KnobsDict[KnobCount]["Size"]:2X}| L\"{DefStr}\" | L\"{OutStr}\" |')
       else:
         if (KnobsDict[KnobCount]['Offset'] >= clb.BITWISE_KNOB_PREFIX):
           OffsetStr = '%05X' %KnobsDict[KnobCount]['Offset']
         else:
           OffsetStr = ' %04X' %KnobsDict[KnobCount]['Offset']
-        log.result(
+        log.debug(
           f'|{KnobsDict[KnobCount]["VarId"]:2X}|{OffsetStr}|{KnobsDict[KnobCount]["KnobName"]:>42}|{KnobsDict[KnobCount]["Size"]:2X}| {KnobsDict[KnobCount]["DefValue"]:8X}  | {KnobsDict[KnobCount]["OutValue"]:8X}  |')
-      log.result('|--|-----|------------------------------------------|--|-----------|-----------|')
+      log.debug('|--|-----|------------------------------------------|--|-----------|-----------|')
   else:
-    log.result(', Print Parameter buff is disabled..')
+    log.debug(', Print Parameter buff is disabled..')
 
   ReturnVal = 0
   if( KnobsVerify and (CmdSubType != clb.CLI_KNOB_LOAD_DEFAULTS) ):
@@ -247,12 +247,12 @@ def cliProcessKnobs(xmlfilename, inifilename, CmdSubType, ignoreXmlgeneration=Fa
     for KnobCount in range (0, len(KnobsDict)):
       if(KnobsDict[KnobCount]['InValue'] != KnobsDict[KnobCount]['OutValue']):
         VerifyErrCnt = VerifyErrCnt + 1
-        log.result(
+        log.debug(
           f'Verify Fail: Knob = {KnobsDict[KnobCount]["KnobName"]}  ExpectedVal = 0x{KnobsDict[KnobCount]["InValue"]:X}    CurrVal = 0x{KnobsDict[KnobCount]["OutValue"]:X} ')
     if (VerifyErrCnt == 0):
-      log.result('Verify Passed!')
+      log.debug('Verify Passed!')
     else:
-      log.result('Verify Failed!')
+      log.debug('Verify Failed!')
       ReturnVal = 1
       clb.LastErrorSig = 0xC42F  # XmlCli Knobs Verify Operation Failed
   clb.CloseInterface()
@@ -301,10 +301,10 @@ def CompareFlashRegion(RefBiosFile, NewBiosFile, Region=fwp.ME_Region):
     log.info(
       f'Comparing Region \"{fwp.FlashRegionDict[Region]}\" at Flash binary Offset: 0x{Offset:X}  Size: 0x{RegionSize:X} ')
     if(RefRegionBuffList == NewRegionBuffList):
-      log.result(f'Region \"{fwp.FlashRegionDict[Region]}\" matches between the two binaries')
+      log.debug(f'Region \"{fwp.FlashRegionDict[Region]}\" matches between the two binaries')
       return 0
     else:
-      log.result(f'Region \"{fwp.FlashRegionDict[Region]}\" is different between the two binaries')
+      log.debug(f'Region \"{fwp.FlashRegionDict[Region]}\" is different between the two binaries')
       clb.LastErrorSig = 0xFCFA  # CompareFlashRegion: Flash Compare Result for given Region is FAIL
       return 1
 
@@ -360,33 +360,33 @@ def PrintResults(KnobsDict={}, Operation='read'):
   if(len(KnobsDict) == 0):
     return
   else:
-    log.result(', see below for the results..')
-    log.result('|--|----|------------------------------------------|--|-----------|-----------|')
+    log.debug(', see below for the results..')
+    log.debug('|--|----|------------------------------------------|--|-----------|-----------|')
     if (Operation == 'loaddefaults'):
-      log.result('|VI|Ofst|                 Knob Name                |Sz|PreviousVal|RestoredVal|')
+      log.debug('|VI|Ofst|                 Knob Name                |Sz|PreviousVal|RestoredVal|')
     else:
-      log.result('|VI|Ofst|                 Knob Name                |Sz|   DefVal  |   CurVal  |')
-    log.result('|--|----|------------------------------------------|--|-----------|-----------|')
+      log.debug('|VI|Ofst|                 Knob Name                |Sz|   DefVal  |   CurVal  |')
+    log.debug('|--|----|------------------------------------------|--|-----------|-----------|')
   for Knob in KnobsDict:
     if(KnobsDict[Knob]['Type'] == 'string'):
       DefStr = clb.UnHexLiFy(KnobsDict[Knob]['DefVal'])[::-1]
       OutStr = clb.UnHexLiFy(KnobsDict[Knob]['CurVal'])[::-1]
-      log.result(
+      log.debug(
         f'|{KnobsDict[Knob]["VarId"]:2X}|{KnobsDict[Knob]["Offset"]:4X}|{Knob:>42}|{KnobsDict[Knob]["Size"]:2X}| L\"{DefStr}\" | L\"{OutStr}\" |')
     else:
-      log.result(
+      log.debug(
         f'|{KnobsDict[Knob]["VarId"]:2X}|{KnobsDict[Knob]["Offset"]:4X}|{Knob:>42}|{KnobsDict[Knob]["Size"]:2X}| {KnobsDict[Knob]["DefVal"]:8X}  | {KnobsDict[Knob]["CurVal"]:8X}  |')
-    log.result('|--|----|------------------------------------------|--|-----------|-----------|')
+    log.debug('|--|----|------------------------------------------|--|-----------|-----------|')
   VerifyStatus = 0
   for Knob in KnobsDict:
     if(KnobsDict[Knob]['ReqVal'] != KnobsDict[Knob]['CurVal']):
-      log.result(
+      log.debug(
         f'Verify Fail: Knob = {Knob}  ExpectedVal = 0x{KnobsDict[Knob]["ReqVal"]:X}    CurrVal = 0x{KnobsDict[Knob]["CurVal"]:X} ')
       VerifyStatus = VerifyStatus + 1
   if (VerifyStatus == 0):
-    log.result('Verify Passed!')
+    log.debug('Verify Passed!')
   else:
-    log.result('Verify Failed!')
+    log.debug('Verify Failed!')
   return VerifyStatus
 
 def getKnobsDict(fname):
@@ -415,7 +415,7 @@ def ReadKnobsLite(KnobStr=0):
   IniFile = CreateTmpIniFile(KnobStr)
   MyKnobDict = getKnobsDict(IniFile)
   if(len(MyKnobDict) == 0):
-    log.result('Input knob List is empty, returning!')
+    log.debug('Input knob List is empty, returning!')
     return 0
   Status = clb.SaveXmlLite(clb.PlatformConfigLiteXml, Operation='savexml', UserKnobsDict=MyKnobDict)
   if (Status == 0):
@@ -427,7 +427,7 @@ def ProgKnobsLite(KnobStr=0):
   IniFile = CreateTmpIniFile(KnobStr)
   MyKnobDict = getKnobsDict(IniFile)
   if(len(MyKnobDict) == 0):
-    log.result('Input knob List is empty, returning!')
+    log.debug('Input knob List is empty, returning!')
     return 0
   Status = clb.SaveXmlLite(clb.PlatformConfigLiteXml, Operation='prog', UserKnobsDict=MyKnobDict)
   if (Status == 0):
@@ -442,7 +442,7 @@ def ResModKnobsLite(KnobStr=0):
     MyKnobDict = getKnobsDict(IniFile)
     RetDict, PrevDict = prs.xml_to_knob_map(clb.PlatformConfigLiteXml, MyKnobDict, operation='restore')
     if(len(RetDict) == 0):
-      log.result('Input knob List is empty and other Knobs already thier Defaults, returning!')
+      log.debug('Input knob List is empty and other Knobs already thier Defaults, returning!')
       return 0
     Status = clb.SaveXmlLite(clb.PlatformConfigLiteXml, Operation='prog', UserKnobsDict=RetDict)
     if (Status == 0):
@@ -456,7 +456,7 @@ def LoadDefaultsLite():
     PreValDict={}
     RetDict, PrevDict = prs.xml_to_knob_map(clb.PlatformConfigLiteXml, operation='restore')
     if(len(RetDict) == 0):
-      log.result('Current Knobs already at their Defaults!')
+      log.debug('Current Knobs already at their Defaults!')
       return 0
     Status = clb.SaveXmlLite(clb.PlatformConfigLiteXml, Operation='prog', UserKnobsDict=RetDict)
     if (Status == 0):
@@ -518,12 +518,12 @@ def GenBootOrderDict(PcXml, NewBootOrderStr=''):
   if (NewBootOrderStr == ''):
     BootOrderLen = len(BootOrderDict['OrderList'])
     if(BootOrderLen == 0):
-      log.result('\tBoot Order Variable not found in XML!')
+      log.debug('\tBoot Order Variable not found in XML!')
       clb.LastErrorSig = 0xB09F  # GenBootOrderDict: Boot Order Variable not found in XML
       return 1
     else:
       if(len(BootOrderDict['OptionsDict']) == 0):
-        log.result('\tBoot Order Options is empty!')
+        log.debug('\tBoot Order Options is empty!')
         clb.LastErrorSig = 0xB09E  # GenBootOrderDict: Boot Order Options is empty in XML
         return 1
       BootOrderString = ''
@@ -532,12 +532,12 @@ def GenBootOrderDict(PcXml, NewBootOrderStr=''):
           BootOrderString = BootOrderString + '%02X' %(BootOrderDict['OrderList'][count])
         else:
           BootOrderString = BootOrderString + '-%02X' %(BootOrderDict['OrderList'][count])
-      log.result(f'\n\tThe Current Boot Order: {BootOrderString}')
-      log.result('\n\tList of Boot Devices in the Current Boot Order')
+      log.debug(f'\n\tThe Current Boot Order: {BootOrderString}')
+      log.debug('\n\tList of Boot Devices in the Current Boot Order')
       for count in range (0, BootOrderLen):
         for count1 in range (0, len(BootOrderDict['OptionsDict'])):
           if(BootOrderDict['OrderList'][count] == BootOrderDict['OptionsDict'][count1]['OptionVal']):
-            log.result(
+            log.debug(
               f'\t\t{BootOrderDict["OptionsDict"][count1]["OptionVal"]:02X} - {BootOrderDict["OptionsDict"][count1]["OptionText"]}')
             break
   else:
@@ -556,7 +556,7 @@ def GetBootOrder():
   Return=savexml(clb.PlatformConfigXml)
   if (Return==0):
     GenBootOrderDict(clb.PlatformConfigXml)
-    log.result('\n\tRequested operations completed successfully.\n')
+    log.debug('\n\tRequested operations completed successfully.\n')
     return 0
   else:
     log.error('\n\tRequested operation is Incomplete\n')
@@ -572,7 +572,7 @@ def SetBootOrder(NewBootOrderStr=''):
         Return1=savexml(clb.PlatformConfigXml)
         if (Return1==0):
           GenBootOrderDict(clb.PlatformConfigXml)
-          log.result('\tRequested operations completed successfully.\n')
+          log.debug('\tRequested operations completed successfully.\n')
           return 0
         else:
           log.error('\tRequested operation is Incomplete\n')
@@ -593,7 +593,7 @@ def MsrAccess(operation, MsrNumber=0xFFFFFFFF, ApicId=0xFFFFFFFF, MsrValue=0):
     return 0
   clb.InitInterface()
   DRAM_MbAddr = clb.GetDramMbAddr()  # Get Dram Mailbox Address.
-  log.result(f'CLI Spec Version = {clb.GetCliSpecVersion(DRAM_MbAddr)}')
+  log.debug(f'CLI Spec Version = {clb.GetCliSpecVersion(DRAM_MbAddr)}')
   DramSharedMBbuf = clb.memBlock(DRAM_MbAddr,0x110) # Read/save parameter buffer
   CLI_ReqBuffAddr = clb.readclireqbufAddr(DramSharedMBbuf)  # Get CLI Request Buffer Adderss
   CLI_ResBuffAddr = clb.readcliresbufAddr(DramSharedMBbuf)  # Get CLI Response Buffer Address
@@ -629,7 +629,7 @@ def MsrAccess(operation, MsrNumber=0xFFFFFFFF, ApicId=0xFFFFFFFF, MsrValue=0):
 
   if (operation == clb.READ_MSR_OPCODE):
     MsrValue = int(clb.memread(CLI_ResBuffAddr + clb.CLI_REQ_RES_BUFF_HEADER_SIZE, 8))
-  log.result(f'Msr No. 0x{MsrNumber:X}  ApicId = 0x{ApicId:X}  MsrValue = 0x{MsrValue:X} ')
+  log.debug(f'Msr No. 0x{MsrNumber:X}  ApicId = 0x{ApicId:X}  MsrValue = 0x{MsrValue:X} ')
   clb.CloseInterface()
   return 0
 
@@ -639,7 +639,7 @@ def IoAccess(operation, IoPort=0xFFFF, Size=0xFF, IoValue=0):
     return 0
   clb.InitInterface()
   DRAM_MbAddr = clb.GetDramMbAddr()  # Get Dram Mailbox Address.
-  log.result(f'CLI Spec Version = {clb.GetCliSpecVersion(DRAM_MbAddr)}')
+  log.debug(f'CLI Spec Version = {clb.GetCliSpecVersion(DRAM_MbAddr)}')
   DramSharedMBbuf = clb.memBlock(DRAM_MbAddr,0x110) # Read/save parameter buffer
   CLI_ReqBuffAddr = clb.readclireqbufAddr(DramSharedMBbuf)  # Get CLI Request Buffer Address
   CLI_ResBuffAddr = clb.readcliresbufAddr(DramSharedMBbuf)  # Get CLI Response Buffer Address
@@ -675,7 +675,7 @@ def IoAccess(operation, IoPort=0xFFFF, Size=0xFF, IoValue=0):
 
   if (operation == clb.IO_READ_OPCODE):
     IoValue = int(clb.memread(CLI_ResBuffAddr + clb.CLI_REQ_RES_BUFF_HEADER_SIZE, 8))
-  log.result(f'IO Port 0x{IoPort:X}  Size = 0x{Size:X}  Value = 0x{IoValue:X} ')
+  log.debug(f'IO Port 0x{IoPort:X}  Size = 0x{Size:X}  Value = 0x{IoValue:X} ')
   clb.CloseInterface()
   return 0
 

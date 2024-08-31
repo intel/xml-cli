@@ -685,7 +685,7 @@ def find_duplicates(xml_file):
   if len(duplicate_knobs) != 0:
     log.error(f'Following knobs are duplicates \n [{",".join(duplicate_knobs)}]')
   else:
-    log.result('No duplicates found in the given XML')
+    log.debug('No duplicates found in the given XML')
   return duplicate_knobs
 
 
