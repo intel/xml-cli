@@ -19,14 +19,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-
 import logging
 import os
 from defusedxml.ElementTree import parse
 from tempfile import TemporaryDirectory
 
 from xmlcli_mod import xmlclilib
+from xmlcli_mod.common.utils import is_root
 from xmlcli_mod.common.errors import BiosKnobsDataUnavailable
+from xmlcli_mod.common.errors import RootError
 from xmlcli_mod.common.errors import XmlCliNotSupported
 
 
@@ -34,6 +35,9 @@ log = logging.getLogger(__name__)
 
 class XmlCli:
     def __init__(self)->None:
+        if not is_root():
+            raise RootError()
+
         self.xml_knobs = None
         xmlclilib.setCliAccess("Linux")
         xmlcli_not_supported = xmlclilib.ConfXmlCli()

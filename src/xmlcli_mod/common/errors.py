@@ -19,6 +19,10 @@
 #  SOFTWARE.
 from pyexpat.errors import messages
 
+class RootError(OSError):
+    def __init__(self):
+        self.message = "XmlCli Module requires Root"
+        super().__init__(self.message)
 
 class XmlCliNotSupported(SystemError):
     def __init__(self, xmlcli_status):
@@ -32,5 +36,5 @@ class XmlCliNotSupported(SystemError):
 
 class BiosKnobsDataUnavailable(SystemError):
     def __init__(self):
-        self.message = "nable to get Xml Cli data from the system"
+        self.message = "unable to get Xml Cli data from the system"
         super().__init__(self.message)

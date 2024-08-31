@@ -27,9 +27,6 @@ import binascii
 import importlib
 import logging
 
-
-
-# Custom Imports
 from .common import utils
 from .common import configurations
 from .common import compress
@@ -65,7 +62,6 @@ XmlCliRespFlags = {'Status': 0, 'CantExe': 0, 'WrongParam': 0, 'TimedOut': 0, 'S
 LastErrorSig = 0x0000
 LastErrorSigDict = {int(key, 16): value["msg"] for key, value in utils.STATUS_CODE_RECORD.items()}
 
-log = logger.settings.logger
 
 CliRespFlags = 0
 _isExeAvailable = True

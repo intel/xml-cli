@@ -42,7 +42,7 @@ TOOL_DIR = os.path.join(XMLCLI_DIR, "tools")
 TEMP_DIR = os.path.join(tempfile.gettempdir(), "XmlCliOut")
 
 # Configuration parser object
-CONFIG_FILE = os.path.join(XMLCLI_DIR, "xmlcli_mod.config")
+CONFIG_FILE = os.path.join(XMLCLI_DIR, "xmlcli.config")
 XMLCLI_CONFIG = config_read(CONFIG_FILE)
 
 ENCODING = XMLCLI_CONFIG.get("GENERAL_SETTINGS", "ENCODING")
@@ -51,24 +51,9 @@ PERFORMANCE = XMLCLI_CONFIG.getboolean("GENERAL_SETTINGS", "PERFORMANCE")
 # BIOS Knobs Configuration file
 BIOS_KNOBS_CONFIG = os.path.join(XMLCLI_DIR, 'cfg', 'BiosKnobs.ini')
 
-OUT_DIR = os.path.join(XMLCLI_DIR, "out")
-# output directory to be overridden if specified in config file
-_OUT_DIR = XMLCLI_CONFIG.get("DIRECTORY_SETTINGS", "OUT_DIR")
-if _OUT_DIR:
-  if os.path.exists(os.path.abspath(_OUT_DIR)) and os.access(os.path.abspath(_OUT_DIR), os.W_OK):
-    # check for absolute directory path and write permission
-    OUT_DIR = os.path.abspath(_OUT_DIR)
-  elif os.path.exists(os.path.join(XMLCLI_DIR, _OUT_DIR)) and os.access(os.path.join(XMLCLI_DIR, _OUT_DIR), os.W_OK):
-    # check for relative directory path and write permission
-    OUT_DIR = os.path.join(XMLCLI_DIR, _OUT_DIR)
-  else:
-    OUT_DIR = TEMP_DIR
+OUT_DIR = TEMP_DIR
 
-if PLATFORM == "uefi":
-  if not os.path.isdir(OUT_DIR):
-    os.makedirs(OUT_DIR)
-else:
-  os.makedirs(OUT_DIR, exist_ok=True)
+os.makedirs(OUT_DIR, exist_ok=True)
 
 # Tools and Utilities
 

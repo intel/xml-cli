@@ -1316,5 +1316,5 @@ def unhex_lify(integer):
   return binascii.unhexlify((hex(integer)[2:]).strip('L')).decode()
 
 
-if __name__ == "__main__":
-  pass
+def is_root():
+  return os.geteuid() == 0
