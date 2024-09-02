@@ -20,13 +20,9 @@
 #  SOFTWARE.
 
 import logging
-import os
-from defusedxml.ElementTree import parse
-from tempfile import TemporaryDirectory
 
 from xmlcli_mod import xmlclilib
 from xmlcli_mod.common.utils import is_root
-from xmlcli_mod.common.errors import BiosKnobsDataUnavailable
 from xmlcli_mod.common.errors import RootError
 
 
