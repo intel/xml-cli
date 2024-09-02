@@ -11,4 +11,34 @@ with an easy-to-use API.
 
 
 ## Pre-Requisites
-This module requires XmlCli BIOS driver enabled
+This module requires XmlCli BIOS driver enabled and ROOT privileges.
+
+## Usage
+
+To use this module simply create an instance of XmlCli:
+```
+>>> # Create instance f XmlCli
+>>> from xmlcli_knob import XmlCli
+>>> xmlcli = XmlCli()
+>>> 
+>>> # Read one BIOS Knob
+>>> xmlcli.get_knob("WheaErrorInjSupportEn")
+Knob(name='WheaErrorInjSupportEn', type='scalar', description='Enable/Disable WHEA Error Injection Support', default=0, value=1, _size='01', _offset='0x00AD')
+>>> 
+>>> # get_kobs returns a dataclass for later usage
+>>> knob = xmlcli.get_knob("WheaErrorInjSupportEn") 
+>>> knob.description
+'Enable/Disable WHEA Error Injection Support'
+>>> knob.value
+1
+>>> 
+>>> # It is possible to compare a knob (using it's name) to a value
+>>> xmlcli.compare_knob("WheaErrorInjSupportEn", 0)
+False
+>>> xmlcli.compare_knob("WheaErrorInjSupportEn", 1)
+True
+>>> 
+>>> # The RAW xml data can be saved to a file
+>>> xmlcli.save_xml_knobs("some_file.xml")
+>>> 
+```

@@ -20,6 +20,7 @@
 #  SOFTWARE.
 
 import logging
+from pathlib import Path
 
 from xmlcli_mod import xmlclilib
 from xmlcli_mod.common.utils import is_root
@@ -80,7 +81,7 @@ class XmlCli:
         """
         self.xml_data = xmlclilib.get_xml()
 
-    def save_xml_knobs(self, filename: str) -> None:
+    def save_xml_knobs(self, filename: str | Path) -> None:
         """
         Saves the current XML data to the specified file.
 
