@@ -27,12 +27,14 @@ import binascii
 import importlib
 import logging
 import defusedxml.ElementTree as ET
+from pathlib import Path
 from xml.etree.ElementTree import ElementTree
 
 from xmlcli_mod.common import utils
 from xmlcli_mod.common import configurations
-from xmlcli_mod.common.errors import InvalidXmlData
 from xmlcli_mod.common.errors import BiosKnobsDataUnavailable
+from xmlcli_mod.common.errors import InvalidAccessMethod
+from xmlcli_mod.common.errors import InvalidXmlData
 from xmlcli_mod.common.errors import XmlCliNotSupported
 
 
@@ -195,26 +197,20 @@ def get_bitwise_knob_details(knob_size, knob_offset, padding=0x8000):
     return knob_width, knob_offset, bit_offset
 
 
-class CliLib(object):
-    def __init__(self, access_request=None, *args, **kwargs):
+class CliLib:
+    def __init__(self, access_request):
         access_methods = self.get_available_access_methods()
-        error_flag = access_request not in access_methods
         if access_request in access_methods:
-            access_config_location = os.path.join(configurations.XMLCLI_DIR, access_methods[access_request])
-            access_file_name = os.path.splitext(os.path.basename(access_config_location))[0]
-            if os.path.exists(access_config_location):
-                self.access_config = configurations.config_read(access_config_location)
-                access_file = self.access_config.get(access_file_name.upper(), "file")  # Source file of access method
-                access_file_location = "xmlcli_mod.access.{}.{}".format(access_file_name,
-                                                                        os.path.splitext(access_file)[0])
-                access_file = importlib.import_module(access_file_location)  # Import access method
-                method_class = self.access_config.get(access_file_name.upper(), "method_class")
-                self.access_instance = getattr(access_file, method_class)(
-                    access_file_name)  # create instance of Access method class
-            else:
-                error_flag = True
-        if error_flag:
-            raise utils.XmlCliException(error_code="0x3001")  # Refer messages.json for meaning of error code
+            config_file_path = Path(configurations.XMLCLI_DIR, access_methods[access_request])
+
+            self.access_config = configurations.config_read(config_file_path)
+            access_file = self.access_config.get(access_request.upper(), "file")  # Source file of access method
+            access_module_path = f"xmlcli_mod.access.{access_request}.{os.path.splitext(access_file)[0]}"
+            access_file = importlib.import_module(access_module_path)  # Import access method
+            method_class = self.access_config.get(access_request.upper(), "method_class")
+            self.access_instance = getattr(access_file, method_class)(access_request)  # create instance of Access method class
+        else:
+            raise InvalidAccessMethod(access_request)
 
     @staticmethod
     def get_available_access_methods():
@@ -222,29 +218,27 @@ class CliLib(object):
 
         :return: dictionary structure {access_method_name: config_file}
         """
-        access_methods = dict(configurations.XMLCLI_CONFIG['ACCESS_METHODS'])
-        return access_methods
+        return configurations.ACCESS_METHODS
 
     def set_cli_access(self, access_request=None):
         access_methods = self.get_available_access_methods()
         if access_request in access_methods:
-            access_config = os.path.join(configurations.XMLCLI_DIR, access_methods["access_request"])
+            access_config = os.path.join(configurations.XMLCLI_DIR, access_methods[access_request])
             if os.path.exists(access_config):
                 self.access_config = configurations.config_read(access_config)
 
 
 def set_cli_access(req_access=None):
-    global cliaccess, InterfaceType, _isExeAvailable, LastErrorSig
-    if req_access != None:
-        InterfaceType = req_access
-        cli_instance = CliLib(InterfaceType.lower())
-        cliaccess = cli_instance.access_instance  # Assign access method instance
+    global cliaccess
+    if not req_access:
+        req_access = InterfaceType
+    if not cliaccess:
+        cli_instance = CliLib(req_access.lower())
+        cliaccess = cli_instance.access_instance
 
 
 def _checkCliAccess():
-    global cliaccess, ForceReInitCliAccess
-    if ((cliaccess == None) or (ForceReInitCliAccess)):
-        set_cli_access()
+    set_cli_access()
 
 
 def haltcpu(delay=0):

@@ -1,11 +1,27 @@
-# -*- coding: utf-8 -*-
-__author__ = "Gahan Saraiya"
-
-# Built-in imports
+#
+#  Copyright 2024 Hkxs
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the “Software”), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#  SOFTWARE.
+import configparser
 import os
 import sys
 import tempfile
-import configparser
 
 
 def config_read(config_file):
@@ -26,7 +42,6 @@ def config_read(config_file):
 
 
 # Platform Details
-PY3 = bool(sys.version_info.major == 3)
 PLATFORM = sys.platform
 PY_VERSION = f"_py{sys.version_info.major}.{sys.version_info.minor}"
 SYSTEM_VERSION = (sys.version_info.major, sys.version_info.minor)
@@ -42,53 +57,23 @@ TOOL_DIR = os.path.join(XMLCLI_DIR, "tools")
 TEMP_DIR = os.path.join(tempfile.gettempdir(), "XmlCliOut")
 
 # Configuration parser object
-CONFIG_FILE = os.path.join(XMLCLI_DIR, "xmlcli.config")
-XMLCLI_CONFIG = config_read(CONFIG_FILE)
 
-ENCODING = XMLCLI_CONFIG.get("GENERAL_SETTINGS", "ENCODING")
-ACCESS_METHOD = XMLCLI_CONFIG.get("GENERAL_SETTINGS", "ACCESS_METHOD")
-PERFORMANCE = XMLCLI_CONFIG.getboolean("GENERAL_SETTINGS", "PERFORMANCE")
+ENCODING = "utf-8"
+ACCESS_METHOD = "linux"
+ACCESS_METHODS = {"linux": "access/linux/linux.ini"}
+PERFORMANCE = False
 # BIOS Knobs Configuration file
 BIOS_KNOBS_CONFIG = os.path.join(XMLCLI_DIR, 'cfg', 'BiosKnobs.ini')
 
 OUT_DIR = TEMP_DIR
-
 os.makedirs(OUT_DIR, exist_ok=True)
 
 # Tools and Utilities
-
-TIANO_COMPRESS_BIN = XMLCLI_CONFIG.get("TOOL_SETTINGS", "TIANO_COMPRESS_BIN")
-if not os.path.isfile(os.path.abspath(TIANO_COMPRESS_BIN)):
-  TIANO_COMPRESS_BIN = os.path.join(TOOL_DIR, TIANO_COMPRESS_BIN)
-  TIANO_COMPRESS_BIN = f"{TIANO_COMPRESS_BIN}{'.exe' if PLATFORM == 'win32' and not TIANO_COMPRESS_BIN.endswith('.exe') else ''}"
-  if not os.path.isfile(TIANO_COMPRESS_BIN):
-    TIANO_COMPRESS_BIN = os.path.abspath(TIANO_COMPRESS_BIN)
-
-BROTLI_COMPRESS_BIN = XMLCLI_CONFIG.get("TOOL_SETTINGS", "BROTLI_COMPRESS_BIN")
-
-if not os.path.isfile(os.path.abspath(BROTLI_COMPRESS_BIN)):
-  BROTLI_COMPRESS_BIN = os.path.join(TOOL_DIR, BROTLI_COMPRESS_BIN)
-  BROTLI_COMPRESS_BIN = f"{BROTLI_COMPRESS_BIN}{'.exe' if PLATFORM == 'win32' and not BROTLI_COMPRESS_BIN.endswith('.exe') else ''}"
-  if not os.path.isfile(BROTLI_COMPRESS_BIN):
-    BROTLI_COMPRESS_BIN = os.path.abspath(BROTLI_COMPRESS_BIN)
+TIANO_COMPRESS_BIN = ""
+BROTLI_COMPRESS_BIN = ""
 
 STATUS_CODE_RECORD_FILE = os.path.join(XMLCLI_DIR, "messages.json")
 
 # Reading other configuration parameters
-CLEANUP = XMLCLI_CONFIG.getboolean("INITIAL_CLEANUP", "CLEANUP")
-
-ENABLE_EXPERIMENTAL_FEATURES = XMLCLI_CONFIG.getboolean("EXPERIMENTAL_FEATURES_SETTINGS", "ENABLE_EXPERIMENTAL_FEATURES")
-
-
-__all__ = ["XMLCLI_CONFIG",
-           "PY3", "PY_VERSION", "SYSTEM_VERSION", "PLATFORM",
-           "XMLCLI_DIR", "TEMP_DIR", "OUT_DIR",
-           "ACCESS_METHOD", "ENCODING", "PERFORMANCE",
-           "TIANO_COMPRESS_BIN", "BROTLI_COMPRESS_BIN",
-           "STATUS_CODE_RECORD_FILE",
-           "ENABLE_EXPERIMENTAL_FEATURES"
-           ]
-
-
-if __name__ == "__main__":
-  pass
+CLEANUP = True
+ENABLE_EXPERIMENTAL_FEATURES = True

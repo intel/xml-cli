@@ -17,31 +17,17 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
-from multiprocessing.managers import Value
 
-from pyexpat.errors import messages
 
-class RootError(OSError):
-    def __init__(self):
-        self.message = "XmlCli Module requires Root"
-        super().__init__(self.message)
+from dataclasses import dataclass
+from typing import Union
 
-class XmlCliNotSupported(SystemError):
-    def __init__(self):
-        self.message = "XmlCli not supported/enabled on the Current BIOS"
-        super().__init__(self.message)
-
-class InvalidXmlData(SystemError):
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)
-
-class BiosKnobsDataUnavailable(SystemError):
-    def __init__(self):
-        self.message = "Unable to get Xml Cli data from the system"
-        super().__init__(self.message)
-
-class InvalidAccessMethod(ValueError):
-    def __init__(self, access):
-        self.message = f"Unsupported access method '{access}'"
-        super().__init__(self.message)
+@dataclass
+class Knob:
+    name: str
+    type: str
+    description: str
+    default: Union[str, int]
+    value: Union[str, int]
+    _size: int
+    _offset: int

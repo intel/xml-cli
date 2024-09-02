@@ -98,10 +98,6 @@ class UefiParser(object):
     )
     self.output = {}
 
-    # Run this method to clean up the existing files in directory
-    if configurations.CLEANUP or kwargs.get('clean'):
-      self.run_cleaner()
-
     self.firmware_volume_guids = {
       "7a9354d9-0468-444a-81ce0bf617d890df": FirmwareVolumeGuid("FFS1",         [0x7a9354d9, 0x0468, 0x444a, 0x81, 0xce, 0x0b, 0xf6, 0x17, 0xd8, 0x90, 0xdf], self.parse_ffs, ""),
       "8c8ce578-8a3d-4f1c-9935896185c32dd3": FirmwareVolumeGuid("FFS2",         [0x8c8ce578, 0x8a3d, 0x4f1c, 0x99, 0x35, 0x89, 0x61, 0x85, 0xc3, 0x2d, 0xd3], self.parse_ffs, "The firmware volume header contains a data field for the file system GUID"),

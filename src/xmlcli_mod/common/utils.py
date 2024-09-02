@@ -21,7 +21,7 @@ from collections import OrderedDict
 
 # Custom imports
 
-from .configurations import XMLCLI_CONFIG, ENCODING, XMLCLI_DIR, OUT_DIR, PY3, STATUS_CODE_RECORD_FILE
+from .configurations import ENCODING, XMLCLI_DIR, STATUS_CODE_RECORD_FILE
 from defusedxml import ElementTree as ET
 
 log = logging.getLogger(__name__)
@@ -437,7 +437,7 @@ def get_string(val, encoding=ENCODING):
   :param encoding: expected encoding format of output string
   :return: string value
   """
-  if PY3 and isinstance(val, bytes):
+  if (sys.version_info.major == 3) and isinstance(val, bytes):
     try:
       return val.decode(encoding=encoding)
     except UnicodeDecodeError:
@@ -893,21 +893,6 @@ def load_nvar_xml(xml_file):
     db[key]["free_space"] = get_integer_value(db[key]["size"]) - occupied_size
     db[key]["next_offset"] = occupied_size
   return db
-
-
-def run_cleaner():
-  """Run cleaner to clean caches or out directory.
-
-  :return:
-  """
-  if XMLCLI_CONFIG.getboolean("INITIAL_CLEANUP", "CLEANUP"):
-    cleanup_extensions = XMLCLI_CONFIG.get("INITIAL_CLEANUP", "CACHE_CLEAN_EXTENSIONS").split(',')
-    try:
-      clean_cache(XMLCLI_DIR, extensions=cleanup_extensions)
-      if XMLCLI_CONFIG.getboolean("INITIAL_CLEANUP", "CLEAN_OUT_DIR"):
-        clean_directory(OUT_DIR)
-    except (PermissionError, WindowsError, OSError):
-      pass
 
 
 def store_buffer(dir_path, buffer, start, end, guid="", _type="FV", extract=False):
