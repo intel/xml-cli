@@ -1,3 +1,0 @@
-defusedxml >= 0.6.0
-
-# Optional Requirements

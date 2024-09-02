@@ -1,57 +1,59 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
-name = "xmlcli"
-version = "2.0.5"
-description = "UFFAF - UEFI Firmware Foundational Automation Framework (formerly Xml-Cli)"
-authors = ["Gahan Saraya <gahan.saraiya@intel.com>"]
-maintainers = ["Intel <xmlcli@intel.com>"]
-license = "BSD 3-Clause License"
+name = "xmlcli-mod"
+version = "0.1.0"
+description = "XmlCli Module (based on UFFAF)"
+authors = ["hkxs <lalvarezf25@gmail.com>"]
+license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/intel/xml-cli"
-keywords = ["uffaf", "xmlcli", "xml-cli", "framework", "automation", "validation", "bios", "xml"]
+homepage = "https://github.com/hkxs/xml-cli-module"
+include = ["CONTRIBUTORS.txt", "NOTICE", "LICENSE"]
+
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "License :: OSI Approved :: BSD License",
+    "License :: OSI Approved :: MIT License",
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
-packages = [{include = "xmlcli", from = "src"}]
 
 [tool.poetry.dependencies]
-python = ">=3.8.1"
-defusedxml = ">=0.6.0"
+python = "^3.6"
+defusedxml = "0.7.1"
 
-[tool.poetry.dev-dependencies]
-tox = ">=3.23.0"
-pygments = ">=2.8.0"
-jinja2 = "^3.1.4"
-babel = ">=2.9.1"
-sphinx = ">=4.0.2"
-pytest = ">=7.4.3"
-pytest-html = ">=4.1.0"
-flake8 = ">=6.1.0"
+[tool.poetry.group.dev.dependencies]
+bandit = "*"
+black = "*"
+flake8-pyproject = "*"
+pytest = "*"
+pytest-mock = "*"
+pytest-cov = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.flake8]
+[tool.black]
+max-line-length = 120
 exclude = [
-    ".git",
     "__pycache__",
-    "docs/source/conf.py",
-    "old",
-    "build",
-    "dist",
-    "out"
+    "*pyc",
+    "docs",
 ]
-ignore = "E501"
-indent-size = 2
-
-[tool.poetry.scripts]
-xmlcli = { reference = "xmlcli.start_xmlcli:cli", type = "console" }
+format = "pylint"
+count = true
+statistics = true
+tee = true
+ignore = [
+    "E203",
+    "E501",
+    "E722",
+    "W503"
+]

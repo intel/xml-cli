@@ -51,5 +51,4 @@ class XmlCli:
             rc = xmlclilib.SaveXml(temp_file)
             if rc:
                 raise BiosKnobsDataUnavailable()
-            with open(temp_file) as f:
-                self.xml_knobs = parse(temp_file)
+            self.xml_knobs = parse(temp_file)
