@@ -345,7 +345,7 @@ def get_set_var(operation="get", xml_file=None, knob_string="", nvar_name="", nv
   # start cli interface
   clb.InitInterface()
   dram_mb_address = clb.GetDramMbAddr()  # Get DRAM mailbox address
-  dram_shared_mb_buffer = clb.memBlock(dram_mb_address, 0x200)  # Read/save parameter buffer
+  dram_shared_mb_buffer = clb.read_mem_block(dram_mb_address, 0x200)  # Read/save parameter buffer
   cli_request_buffer_address = clb.readclireqbufAddr(dram_shared_mb_buffer)
   cli_response_buffer_address = clb.readcliresbufAddr(dram_shared_mb_buffer)
   log.info(f"CLI Request Buffer Addr = 0x{cli_request_buffer_address:x}   CLI Response Buffer Addr = 0x{cli_response_buffer_address:x}")
@@ -393,7 +393,7 @@ def get_set_var(operation="get", xml_file=None, knob_string="", nvar_name="", nv
   current_param_size = utils.get_integer_value(clb.memread(cli_response_buffer_address + clb.CLI_REQ_RES_READY_PARAMSZ_OFF, 4))
   log.debug(f"current_param_size: {current_param_size}")
   if current_param_size:
-    current_param_buffer = clb.memBlock(cli_response_buffer_address + clb.CLI_REQ_RES_BUFF_HEADER_SIZE, current_param_size)
+    current_param_buffer = clb.read_mem_block(cli_response_buffer_address + clb.CLI_REQ_RES_BUFF_HEADER_SIZE, current_param_size)
     with open(nvar_response_buffer_file, "wb") as out_file:
       out_file.write(current_param_buffer)
       log.info(f"Response Buffer Bin file for Current Nvar saved as {nvar_response_buffer_file}")

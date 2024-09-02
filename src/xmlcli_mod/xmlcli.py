@@ -28,27 +28,22 @@ from xmlcli_mod import xmlclilib
 from xmlcli_mod.common.utils import is_root
 from xmlcli_mod.common.errors import BiosKnobsDataUnavailable
 from xmlcli_mod.common.errors import RootError
-from xmlcli_mod.common.errors import XmlCliNotSupported
 
 
 log = logging.getLogger(__name__)
 
 class XmlCli:
-    def __init__(self)->None:
+    def __init__(self) -> None:
         if not is_root():
             raise RootError()
 
         self.xml_knobs = None
-        xmlclilib.setCliAccess("Linux")
-        xmlcli_not_supported = xmlclilib.ConfXmlCli()
-        if xmlcli_not_supported:
-            raise XmlCliNotSupported(xmlcli_not_supported)
+        xmlclilib.set_cli_access("Linux")
+        xmlclilib.verify_xmlcli_support()
         self._get_xml_knobs()
 
-    def _get_xml_knobs(self)->None:
-        with TemporaryDirectory() as tmpdir:
-            temp_file = os.path.join(tmpdir, "temp.xml")
-            rc = xmlclilib.SaveXml(temp_file)
-            if rc:
-                raise BiosKnobsDataUnavailable()
-            self.xml_knobs = parse(temp_file)
+    def _get_xml_knobs(self) -> None:
+          self.xml_knobs = xmlclilib.get_xml()
+
+    def save_xml_knobs(self, filename: str) -> None:
+        self.xml_knobs.write(filename)
