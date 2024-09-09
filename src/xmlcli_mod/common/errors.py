@@ -17,11 +17,10 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
-from multiprocessing.managers import Value
 
-from pyexpat.errors import messages
 
-class RootError(OSError):
+
+class RootError(PermissionError):
     def __init__(self):
         self.message = "XmlCli Module requires Root"
         super().__init__(self.message)

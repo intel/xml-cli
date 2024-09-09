@@ -1,6 +1,6 @@
 # XmlCli-Module
 
-This project is a fork from [UFFAF (UEFI Firmware Foundational Automation
+This project is as a fork from [UFFAF (UEFI Firmware Foundational Automation
 Framework)](https://github.com/intel/xml-cli) tool from Intel(R) (formerly
 XmlCli), unfortunately, the original project seems to be intended as a
 standalone tool rather than a Python module, this project aims to update the
@@ -9,6 +9,11 @@ tool to make it easier to work with on any other Python project.
 This module is intended to be used to read BIOS knobs and system information
 with an easy-to-use API.
 
+> [!NOTE] 
+> Not all the functionality of XmlCli will be ported since the scope of
+> the projects are different, XmlCli-Module is intended to be used to read BIOS
+> knobs and some other system information, while XmlCli can be used for several
+> more things that are out-of-scope of this project.
 
 ## Pre-Requisites
 This module requires XmlCli BIOS driver enabled and ROOT privileges.

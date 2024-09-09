@@ -109,7 +109,7 @@ class XmlCli:
             self._knobs = self._extract_knobs()
         return self._knobs
 
-    def _extract_knobs(self) -> dict[str: Knob]:
+    def _extract_knobs(self) -> dict[str, Knob]:
         """
         Parses the XML data to extract BIOS knobs.
 
@@ -135,8 +135,8 @@ class XmlCli:
                 "_offset": knob.attrib["offset"],
             }
             if knob_attributes["type"] == "scalar":
-                knob_attributes["default"] = int(knob_attributes["default"], 16)
-                knob_attributes["value"] = int(knob_attributes["value"], 16)
+                knob_attributes["default"] = int(knob_attributes.get("default", 0), 16)
+                knob_attributes["value"] = int(knob_attributes.get("value", 0), 16)
 
             knobs_dict[knob_name] = Knob(**knob_attributes)
         return knobs_dict
