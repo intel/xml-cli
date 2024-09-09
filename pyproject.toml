@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "xmlcli-mod"
-version = "0.1.0"
+version = "0.1.2"
 description = "XmlCli Module (based on UFFAF)"
 authors = ["hkxs <lalvarezf25@gmail.com>"]
 license = "MIT"
