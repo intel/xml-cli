@@ -19,8 +19,11 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+import defusedxml.ElementTree as ET
 import logging
+
 from pathlib import Path
+from xml.etree.ElementTree import ElementTree
 
 from xmlcli_mod import xmlclilib
 from xmlcli_mod.common.utils import is_root
@@ -66,6 +69,7 @@ class XmlCli:
         if not is_root():
             raise RootError()
 
+        self._xml_string = ""
         self.xml_data = None
         self._knobs = None
         xmlclilib.set_cli_access("Linux")
@@ -79,7 +83,11 @@ class XmlCli:
         This method fetches the XML configuration and assigns it to the
         `xml_data` attribute.
         """
-        self.xml_data = xmlclilib.get_xml()
+        defused_xml = ET.fromstring()
+
+        # we're converting an element to a tree, we can safely use built-in xml
+        # module because, at this point, it's already being parsed by defusedxml
+        self.xml_data = ElementTree(defused_xml)
 
     def save_xml_knobs(self, filename: str | Path) -> None:
         """
@@ -90,7 +98,8 @@ class XmlCli:
         filename : str
             The path to the file where XML data will be saved.
         """
-        self.xml_data.write(filename)
+        with open(filename, "w") as f:
+            f.write(self._xml_string)
 
     @property
     def bios_knobs(self):
