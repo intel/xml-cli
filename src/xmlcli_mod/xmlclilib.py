@@ -19,17 +19,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-import os
-
 import binascii
 import importlib
 import logging
+import platform
 
-from pathlib import Path
+import xmlcli_mod.common.constants as const
 
-from xmlcli_mod.common import configurations
+
 from xmlcli_mod.common.errors import BiosKnobsDataUnavailable
-from xmlcli_mod.common.errors import InvalidAccessMethod
 from xmlcli_mod.common.errors import InvalidXmlData
 from xmlcli_mod.common.errors import XmlCliNotSupported
 
@@ -39,25 +37,6 @@ cli_access = None
 
 gDramSharedMbAddr = 0
 
-SHAREDMB_SIG1 = 0xBA5EBA11
-SHAREDMB_SIG2 = 0xBA5EBA11
-SHARED_MB_LEGMB_SIG_OFF = 0x20
-SHARED_MB_LEGMB_ADDR_OFF = 0x24
-LEGACYMB_SIG = 0x5A7ECAFE
-
-SHAREDMB_SIG1_OFF = 0x00
-SHAREDMB_SIG2_OFF = 0x08
-CLI_SPEC_VERSION_MINOR_OFF = 0x14
-CLI_SPEC_VERSION_MAJOR_OFF = 0x15
-CLI_SPEC_VERSION_RELEASE_OFF = 0x17
-LEGACYMB_SIG_OFF = 0x20
-LEGACYMB_OFF = 0x24
-LEGACYMB_XML_OFF = 0x0C
-MERLINX_XML_CLI_ENABLED_OFF = 0x28
-LEGACYMB_XML_CLI_TEMP_ADDR_OFF = 0x60
-ASCII = 0xA5
-HEX = 0x16
-
 CliSpecRelVersion = 0x00
 CliSpecMajorVersion = 0x00
 CliSpecMinorVersion = 0x00
@@ -65,44 +44,21 @@ CliSpecMinorVersion = 0x00
 PAGE_SIZE = 0x1000
 
 
+def load_os_specific_access():
+    os_name = platform.system()  # Get the name of the OS
+    try:
+        module_name = f"xmlcli_mod.access.{os_name.lower()}.{os_name.lower()}"
+        module = importlib.import_module(module_name)
+    except ImportError:
+        raise RuntimeError(f"Unsupported OS: {os_name}")
 
-class CliLib:
-    def __init__(self, access_request):
-        access_methods = self.get_available_access_methods()
-        if access_request in access_methods:
-            config_file_path = Path(configurations.XMLCLI_DIR, access_methods[access_request])
+    access_class = getattr(module, f"{os_name}Access")
+    return access_class()
 
-            self.access_config = configurations.config_read(config_file_path)
-            access_file = self.access_config.get(access_request.upper(), "file")  # Source file of access method
-            access_module_path = f"xmlcli_mod.access.{access_request}.{os.path.splitext(access_file)[0]}"
-            access_file = importlib.import_module(access_module_path)  # Import access method
-            method_class = self.access_config.get(access_request.upper(), "method_class")
-            self.access_instance = getattr(access_file, method_class)(access_request)  # create instance of Access method class
-        else:
-            raise InvalidAccessMethod(access_request)
-
-    @staticmethod
-    def get_available_access_methods():
-        """Gather all the available access method name and it's configuration file from defined in tool configuration file
-
-        :return: dictionary structure {access_method_name: config_file}
-        """
-        return {"linux": "access/linux/linux.ini"}
-
-    def set_cli_access(self, access_request=None):
-        access_methods = self.get_available_access_methods()
-        if access_request in access_methods:
-            access_config = os.path.join(configurations.XMLCLI_DIR, access_methods[access_request])
-            if os.path.exists(access_config):
-                self.access_config = configurations.config_read(access_config)
-
-
-def set_cli_access(req_access):
+def set_cli_access():
     global cli_access
     if not cli_access:
-        logger.debug(f"Using '{req_access.lower()}' access")
-        cli_instance = CliLib(req_access.lower())
-        cli_access = cli_instance.access_instance
+        cli_access = load_os_specific_access()
 
 
 def _check_cli_access():
@@ -298,10 +254,10 @@ def read_buffer(input_buffer, offset, size, input_type):
     value_string = ''
     if len(value_buffer) == 0:
         return 0
-    if input_type == ASCII:
+    if input_type == const.ASCII:
         value_string = "".join(chr(value_buffer[i]) for i in range(len(value_buffer)))
         return value_string
-    if input_type == HEX:
+    if input_type == const.HEX:
         for count in range(len(value_buffer)):
             value_string = f"{value_buffer[count]:02x}" + value_string
         return int(value_string, 16)
@@ -314,38 +270,38 @@ def un_hex_li_fy(value):
 
 def get_cli_spec_version(dram_mb_addr):
     global CliSpecRelVersion, CliSpecMajorVersion, CliSpecMinorVersion
-    CliSpecRelVersion = mem_read((dram_mb_addr + CLI_SPEC_VERSION_RELEASE_OFF), 1) & 0xF
-    CliSpecMajorVersion = mem_read((dram_mb_addr + CLI_SPEC_VERSION_MAJOR_OFF), 2)
-    CliSpecMinorVersion = mem_read((dram_mb_addr + CLI_SPEC_VERSION_MINOR_OFF), 1)
+    CliSpecRelVersion = mem_read((dram_mb_addr + const.CLI_SPEC_VERSION_RELEASE_OFF), 1) & 0xF
+    CliSpecMajorVersion = mem_read((dram_mb_addr + const.CLI_SPEC_VERSION_MAJOR_OFF), 2)
+    CliSpecMinorVersion = mem_read((dram_mb_addr + const.CLI_SPEC_VERSION_MINOR_OFF), 1)
     return f'{CliSpecRelVersion:d}.{CliSpecMajorVersion:d}.{CliSpecMinorVersion:d}'
 
 
 def fix_leg_xml_offset(dram_mb_addr):
-    global CliSpecRelVersion, CliSpecMajorVersion, CliSpecMinorVersion, LEGACYMB_XML_OFF
-    LEGACYMB_XML_OFF = 0x0C
+    global CliSpecRelVersion, CliSpecMajorVersion, CliSpecMinorVersion
+    const.LEGACYMB_XML_OFF = 0x0C
     if CliSpecRelVersion == 0:
         if CliSpecMajorVersion >= 7:
-            LEGACYMB_XML_OFF = 0x50
+            const.LEGACYMB_XML_OFF = 0x50
             if (CliSpecMajorVersion == 7) and (CliSpecMinorVersion == 0):
-                leg_mb_offset = mem_read((dram_mb_addr + LEGACYMB_OFF), 4)
+                leg_mb_offset = mem_read((dram_mb_addr + const.LEGACYMB_OFF), 4)
                 if leg_mb_offset < 0xFFFF:
                     leg_mb_offset = dram_mb_addr + leg_mb_offset
                 if mem_read((leg_mb_offset + 0x4C), 4) == 0:
-                    LEGACYMB_XML_OFF = 0x50
+                    const.LEGACYMB_XML_OFF = 0x50
                 else:
-                    LEGACYMB_XML_OFF = 0x4C
+                    const.LEGACYMB_XML_OFF = 0x4C
     else:
-        LEGACYMB_XML_OFF = 0x50
+        const.LEGACYMB_XML_OFF = 0x50
 
 
 def is_leg_mb_sig_valid(dram_mb_addr):
     global CliSpecRelVersion, CliSpecMajorVersion
-    shared_mb_sig1 = mem_read((dram_mb_addr + SHAREDMB_SIG1_OFF), 4)
-    shared_mb_sig2 = mem_read((dram_mb_addr + SHAREDMB_SIG2_OFF), 4)
-    if (shared_mb_sig1 == SHAREDMB_SIG1) and (shared_mb_sig2 == SHAREDMB_SIG2):
+    shared_mb_sig1 = mem_read((dram_mb_addr + const.SHAREDMB_SIG1_OFF), 4)
+    shared_mb_sig2 = mem_read((dram_mb_addr + const.SHAREDMB_SIG2_OFF), 4)
+    if (shared_mb_sig1 == const.SHAREDMB_SIG1) and (shared_mb_sig2 == const.SHAREDMB_SIG2):
         cli_spec_version = get_cli_spec_version(dram_mb_addr)
-        share_mb_entry1_sig = mem_read((dram_mb_addr + LEGACYMB_SIG_OFF), 4)
-        if share_mb_entry1_sig == LEGACYMB_SIG:
+        share_mb_entry1_sig = mem_read((dram_mb_addr + const.LEGACYMB_SIG_OFF), 4)
+        if share_mb_entry1_sig == const.LEGACYMB_SIG:
             fix_leg_xml_offset(dram_mb_addr)
         return cli_spec_version
     return False
@@ -405,19 +361,19 @@ def read_xml_details(dram_shared_mailbox_buffer):
     :param dram_shared_mailbox_buffer: Shared Mailbox temporary buffer address
     :return:
     """
-    shared_mb_sig1 = read_buffer(dram_shared_mailbox_buffer, SHAREDMB_SIG1_OFF, 4, HEX)
-    shared_mb_sig2 = read_buffer(dram_shared_mailbox_buffer, SHAREDMB_SIG2_OFF, 4, HEX)
+    shared_mb_sig1 = read_buffer(dram_shared_mailbox_buffer, const.SHAREDMB_SIG1_OFF, 4, const.HEX)
+    shared_mb_sig2 = read_buffer(dram_shared_mailbox_buffer, const.SHAREDMB_SIG2_OFF, 4, const.HEX)
     gbt_xml_addr = 0
     gbt_xml_size = 0
-    if (shared_mb_sig1 == SHAREDMB_SIG1) and (shared_mb_sig2 == SHAREDMB_SIG2):
-        share_mb_entry1_sig = read_buffer(dram_shared_mailbox_buffer, LEGACYMB_SIG_OFF, 4, HEX)
-        if share_mb_entry1_sig == LEGACYMB_SIG:
+    if (shared_mb_sig1 == const.SHAREDMB_SIG1) and (shared_mb_sig2 == const.SHAREDMB_SIG2):
+        share_mb_entry1_sig = read_buffer(dram_shared_mailbox_buffer, const.LEGACYMB_SIG_OFF, 4, const.HEX)
+        if share_mb_entry1_sig == const.LEGACYMB_SIG:
             logger.debug(f"Legacy MB signature found: {share_mb_entry1_sig}")
-            leg_mb_offset = read_buffer(dram_shared_mailbox_buffer, LEGACYMB_OFF, 4, HEX)
+            leg_mb_offset = read_buffer(dram_shared_mailbox_buffer, const.LEGACYMB_OFF, 4, const.HEX)
             if leg_mb_offset > 0xFFFF:
-                gbt_xml_addr = mem_read(leg_mb_offset + LEGACYMB_XML_OFF, 4) + 4
+                gbt_xml_addr = mem_read(leg_mb_offset + const.LEGACYMB_XML_OFF, 4) + 4
             else:
-                gbt_xml_addr = read_buffer(dram_shared_mailbox_buffer, leg_mb_offset + LEGACYMB_XML_OFF, 4, HEX) + 4
+                gbt_xml_addr = read_buffer(dram_shared_mailbox_buffer, leg_mb_offset + const.LEGACYMB_XML_OFF, 4, const.HEX) + 4
             gbt_xml_size = mem_read(gbt_xml_addr - 4, 4)
     return gbt_xml_addr, gbt_xml_size
 
@@ -432,9 +388,9 @@ def is_xml_valid(gbt_xml_address, gbt_xml_size):
     """
     try:
         temp_buffer = read_mem_block(gbt_xml_address, 0x08)  # Read/save parameter buffer
-        system_start = read_buffer(temp_buffer, 0, 0x08, ASCII)
+        system_start = read_buffer(temp_buffer, 0, 0x08, const.ASCII)
         temp_buffer = read_mem_block(gbt_xml_address + gbt_xml_size - 0xB, 0x09)  # Read/save parameter buffer
-        system_end = read_buffer(temp_buffer, 0, 0x09, ASCII)
+        system_end = read_buffer(temp_buffer, 0, 0x09, const.ASCII)
         if (system_start == "<SYSTEM>") and (system_end == "</SYSTEM>"):
             return True
         else:

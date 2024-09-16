@@ -1,5 +1,5 @@
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core", "setuptools==75.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
@@ -35,6 +35,11 @@ pytest-mock = "*"
 pytest-cov = "*"
 sphinx = "*"
 sphinx-rtd-theme = "*"
+
+[tool.poetry.build]
+script = "build.py"
+generate-setup-file = true
+
 
 [tool.black]
 max-line-length = 120

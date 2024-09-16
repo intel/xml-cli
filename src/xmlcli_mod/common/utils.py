@@ -19,8 +19,18 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+import binascii
 import os
 
 
 def is_root():
     return os.geteuid() == 0
+
+
+def byte_to_int(data):
+    return int(binascii.hexlify(bytearray(data)[::-1]), 16)
+
+
+def int_to_byte(data, size):
+    data_dump = data.to_bytes(size, byteorder="little", signed=False)
+    return data_dump

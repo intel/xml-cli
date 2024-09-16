@@ -3,6 +3,6 @@ Original XmlCli Authors
 * Shinde, Amol <amol.shinde@intel.com>
 * Saraiya, Gahan <gahan.saraiya@intel.com>
 
-Contributors
-------------
+Contributors to XmlCli
+----------------------
 * Emptage, Nick <nick.emptage@intel.com>
