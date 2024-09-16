@@ -41,22 +41,8 @@ script = "build.py"
 generate-setup-file = true
 
 [tool.black]
-max-line-length = 120
-exclude = [
-    "__pycache__",
-    "*pyc",
-    "docs",
-]
-format = "pylint"
-count = true
-statistics = true
-tee = true
-ignore = [
-    "E203",
-    "E501",
-    "E722",
-    "W503"
-]
+line-length = 120
+
 
 [tool.flake8]
 max-line-length = 120

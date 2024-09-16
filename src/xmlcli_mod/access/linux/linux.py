@@ -37,7 +37,7 @@ class LinuxAccess:
         # Read Port configuration
         self._read_port = self.port_library.read_port
         self._read_port.argtypes = (ctypes.c_uint16, ctypes.c_uint8)
-        self._read_port.restype = (ctypes.POINTER(ctypes.c_uint8))
+        self._read_port.restype = ctypes.POINTER(ctypes.c_uint8)
         # Write port configuration
         self._write_port = self.port_library.write_port
         self._write_port.argtypes = (ctypes.c_uint16, ctypes.c_uint8, ctypes.c_uint32)
@@ -99,7 +99,7 @@ class LinuxAccess:
     def read_memory_block(self, address, size, val=None):
         if val is None:
             read_val = self.read_memory(address, size)
-            return binascii.unhexlify(hex(read_val)[2:].strip('L').zfill(size * 2))[::-1]
+            return binascii.unhexlify(hex(read_val)[2:].strip("L").zfill(size * 2))[::-1]
         else:
             ret = self.write_memory(address, val, size)
             return ret
@@ -117,7 +117,7 @@ class LinuxAccess:
                 result = self.read_memory_block(address, (first_end_page_address - address))
                 result1.extend(result)
             block_count = 0
-            block_size = (end_address - first_end_page_address)
+            block_size = end_address - first_end_page_address
             block_number = int(block_size / 0x1000)
             for block_count in range(0, block_number):
                 result = self.read_memory_block(first_end_page_address + (block_count * 0x1000), 0x1000)
@@ -131,7 +131,7 @@ class LinuxAccess:
 
     def mem_save(self, filename, address, size):
         temp_buffer = self.mem_block(address, size)
-        with open(filename, 'wb') as out_file:  # opening for writing
+        with open(filename, "wb") as out_file:  # opening for writing
             out_file.write(temp_buffer)
 
     def mem_read(self, address, size):

@@ -58,6 +58,7 @@ class XmlCli:
     compare_knob(knob_name: str, value: str | int) -> bool
         Compares the value of a specific knob to the provided value.
     """
+
     def __init__(self) -> None:
         """
         Initializes the XmlCli instance.

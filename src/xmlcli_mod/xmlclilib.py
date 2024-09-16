@@ -217,7 +217,7 @@ def clear_cmos():
 
     :return:
     """
-    logger.warning('Clearing CMOS')
+    logger.warning("Clearing CMOS")
     for i in range(0x0, 0x80, 1):
         write_io(0x70, 1, i)
         write_io(0x71, 1, 0)
@@ -230,7 +230,7 @@ def clear_cmos():
     write_io(0x70, 1, 0x0E)
     write_io(0x71, 1, 0xC0)  # set CMOS BAD flag
 
-    rtc_reg_pci_address = ((1 << 31) + (0 << 16) + (31 << 11) + (0 << 8) + 0xA4)
+    rtc_reg_pci_address = (1 << 31) + (0 << 16) + (31 << 11) + (0 << 8) + 0xA4
     write_io(0xCF8, 4, rtc_reg_pci_address)
     rtc_value = read_io(0xCFC, 2)
     rtc_value = rtc_value | 0x4
@@ -252,8 +252,8 @@ def read_buffer(input_buffer, offset, size, input_type):
 
     :return: buffer read from input
     """
-    value_buffer = input_buffer[offset:offset + size]
-    value_string = ''
+    value_buffer = input_buffer[offset : offset + size]
+    value_string = ""
     if len(value_buffer) == 0:
         return 0
     if input_type == const.ASCII:
@@ -267,7 +267,7 @@ def read_buffer(input_buffer, offset, size, input_type):
 
 
 def un_hex_li_fy(value):
-    return binascii.unhexlify((hex(value)[2:]).strip('L')).decode()
+    return binascii.unhexlify((hex(value)[2:]).strip("L")).decode()
 
 
 def get_cli_spec_version(dram_mb_addr):
@@ -275,7 +275,7 @@ def get_cli_spec_version(dram_mb_addr):
     CliSpecRelVersion = mem_read((dram_mb_addr + const.CLI_SPEC_VERSION_RELEASE_OFF), 1) & 0xF
     CliSpecMajorVersion = mem_read((dram_mb_addr + const.CLI_SPEC_VERSION_MAJOR_OFF), 2)
     CliSpecMinorVersion = mem_read((dram_mb_addr + const.CLI_SPEC_VERSION_MINOR_OFF), 1)
-    return f'{CliSpecRelVersion:d}.{CliSpecMajorVersion:d}.{CliSpecMinorVersion:d}'
+    return f"{CliSpecRelVersion:d}.{CliSpecMajorVersion:d}.{CliSpecMinorVersion:d}"
 
 
 def fix_leg_xml_offset(dram_mb_addr):
@@ -330,15 +330,15 @@ def get_dram_mb_addr():
     result1 = int(read_io(0x71, 1) & 0xFF)  # Read a byte from cmos offset 0xBC [31:24]
     dram_shared_mb_address = int((result1 << 24) | (result0 << 16))  # Get bits [31:24] of the Dram MB address
     if is_leg_mb_sig_valid(dram_shared_mb_address):
-        logger.debug(f'CLI Spec Version = {get_cli_spec_version(dram_shared_mb_address)}')
-        logger.debug(f'DRAM_MbAddr = 0x{dram_shared_mb_address:X}')
+        logger.debug(f"CLI Spec Version = {get_cli_spec_version(dram_shared_mb_address)}")
+        logger.debug(f"DRAM_MbAddr = 0x{dram_shared_mb_address:X}")
         return dram_shared_mb_address
 
     if gDramSharedMbAddr != 0:
         dram_shared_mb_address = int(gDramSharedMbAddr)
         if is_leg_mb_sig_valid(dram_shared_mb_address):
-            logger.debug(f'CLI Spec Version = {get_cli_spec_version(dram_shared_mb_address)}')
-            logger.debug(f'DRAM_MbAddr = 0x{dram_shared_mb_address:X}')
+            logger.debug(f"CLI Spec Version = {get_cli_spec_version(dram_shared_mb_address)}")
+            logger.debug(f"DRAM_MbAddr = 0x{dram_shared_mb_address:X}")
             return dram_shared_mb_address
 
     return 0
@@ -347,7 +347,7 @@ def get_dram_mb_addr():
 def verify_xmlcli_support():
     if not get_dram_mb_addr():
         raise XmlCliNotSupported()
-    logger.debug('XmlCli is Enabled')
+    logger.debug("XmlCli is Enabled")
 
 
 def read_xml_details(dram_shared_mailbox_buffer):
@@ -399,7 +399,7 @@ def is_xml_valid(gbt_xml_address, gbt_xml_size):
         else:
             return False
     except Exception as e:
-        logger.error(f'Exception detected when determining if xml is valid.\n {e}')
+        logger.error(f"Exception detected when determining if xml is valid.\n {e}")
         return False
 
 
@@ -408,20 +408,20 @@ def is_xml_valid(gbt_xml_address, gbt_xml_size):
 def is_xml_generated():
     status = 0
     dram_mb_addr = get_dram_mb_addr()  # Get DRam Mailbox Address from Cmos.
-    logger.debug(f'CLI Spec Version = {get_cli_spec_version(dram_mb_addr)}')
-    logger.debug(f'dram_mb_addr = 0x{dram_mb_addr:X}')
+    logger.debug(f"CLI Spec Version = {get_cli_spec_version(dram_mb_addr)}")
+    logger.debug(f"dram_mb_addr = 0x{dram_mb_addr:X}")
     if dram_mb_addr == 0x0:
-        logger.error('Dram Shared Mailbox not Valid, hence exiting')
+        logger.error("Dram Shared Mailbox not Valid, hence exiting")
         return 1
     dram_shared_m_bbuf = read_mem_block(dram_mb_addr, 0x200)  # Read/save parameter buffer
     xml_addr, xml_size = read_xml_details(dram_shared_m_bbuf)  # read GBTG XML address and Size
     if xml_addr == 0:
-        logger.error('Platform Configuration XML not yet generated, hence exiting')
+        logger.error("Platform Configuration XML not yet generated, hence exiting")
         return 1
     if is_xml_valid(xml_addr, xml_size):
-        logger.debug('Xml Is Generated and it is Valid')
+        logger.debug("Xml Is Generated and it is Valid")
     else:
-        logger.error(f'XML is not valid or not yet generated ADDR = 0x{xml_addr:X}, SIZE = 0x{xml_size:X}')
+        logger.error(f"XML is not valid or not yet generated ADDR = 0x{xml_addr:X}, SIZE = 0x{xml_size:X}")
         status = 1
     return status
 
@@ -443,8 +443,7 @@ def get_xml():
         xml_bytearray = read_mem_block(xml_addr, int(xml_size))
         xml_data = xml_bytearray.decode()
     else:
-        raise InvalidXmlData(
-            f'XML is not valid or not yet generated xml_addr = 0x{xml_addr:X}, xml_size = 0x{xml_size:X}')
+        raise InvalidXmlData(f"Invalid XML or not generated yet, xml_addr = 0x{xml_addr:X}, xml_size = 0x{xml_size:X}")
 
     return xml_data
 
@@ -481,11 +480,11 @@ def get_efi_compatible_table_base():
         sig2 = mem_read(0xF0000 + index, 4)
         if sig1 == efi_com_tbl_sig:
             base_address = 0xE0000 + index
-            logger.debug(f'Found EfiCompatibleTable Signature at 0x{base_address:X}')
+            logger.debug(f"Found EfiCompatibleTable Signature at 0x{base_address:X}")
             return base_address
         if sig2 == efi_com_tbl_sig:
             base_address = 0xF0000 + index
-            logger.debug(f'Found EfiCompatibleTable Signature at 0x{base_address:X}')
+            logger.debug(f"Found EfiCompatibleTable Signature at 0x{base_address:X}")
             return base_address
     logger.debug(hex(index))
     return 0
@@ -504,7 +503,7 @@ def search_for_system_table_address():
 def read_dram_mb_addr_from_efi():
     dram_shared_mail_box_guid_low = 0x4D2C18789D99A394
     dram_shared_mail_box_guid_high = 0x3379C48E6BC1E998
-    logger.debug('Searching for Dram Shared Mailbox address from g_st EfiConfigTable..')
+    logger.debug("Searching for Dram Shared Mailbox address from g_st EfiConfigTable..")
     g_st = search_for_system_table_address()
     if g_st == 0:
         efi_compatible_table_base = get_efi_compatible_table_base()
@@ -514,24 +513,24 @@ def read_dram_mb_addr_from_efi():
     signature = mem_read(g_st, 8)
     if signature != 0x5453595320494249:  # EFI System Table signature = 'IBI SYST'
         return 0
-    logger.debug(f'EFI SYSTEM TABLE Address = 0x{g_st:X}')
-    logger.debug(f'signature = \"{un_hex_li_fy(signature)[::-1]}\" ')
-    logger.debug(f'Revision = {mem_read(g_st + 8, 2):d}.{mem_read(g_st + 0xA, 2):d}')
+    logger.debug(f"EFI SYSTEM TABLE Address = 0x{g_st:X}")
+    logger.debug(f'signature = "{un_hex_li_fy(signature)[::-1]}" ')
+    logger.debug(f"Revision = {mem_read(g_st + 8, 2):d}.{mem_read(g_st + 0xA, 2):d}")
     count = 0
     firmware_ptr = mem_read(g_st + 0x18, 8)
     firmware_revision = mem_read(g_st + 0x20, 4)
-    bios_str = ''
+    bios_str = ""
     while 1:
         value = int(mem_read(firmware_ptr + count, 2))
         if value == 0:
             break
         bios_str = bios_str + chr((value & 0xFF))
         count = count + 2
-    logger.debug(f'Firmware : {bios_str}')
-    logger.debug(f'Firmware Revision: 0x{firmware_revision:X}')
+    logger.debug(f"Firmware : {bios_str}")
+    logger.debug(f"Firmware Revision: 0x{firmware_revision:X}")
     efi_config_tbl_entries = mem_read(g_st + 0x68, 8)
     efi_config_tbl = mem_read(g_st + 0x70, 8)
-    logger.debug(f'efi_config_tbl_entries = {efi_config_tbl_entries:d}  efi_config_tbl Addr = 0x{efi_config_tbl:X}')
+    logger.debug(f"efi_config_tbl_entries = {efi_config_tbl_entries:d}  efi_config_tbl Addr = 0x{efi_config_tbl:X}")
     offset = 0
     dram_mailbox_addr = 0
     for Index in range(0, efi_config_tbl_entries):
@@ -539,7 +538,7 @@ def read_dram_mb_addr_from_efi():
         guid_high = mem_read(efi_config_tbl + 8 + offset, 8)
         if (guid_low == dram_shared_mail_box_guid_low) and (guid_high == dram_shared_mail_box_guid_high):
             dram_mailbox_addr = int(mem_read(efi_config_tbl + 16 + offset, 8))
-            logger.info(f'Found Dram Shared MailBox Address = 0x{dram_mailbox_addr:X} from EfiConfigTable')
+            logger.info(f"Found Dram Shared MailBox Address = 0x{dram_mailbox_addr:X} from EfiConfigTable")
             break
         offset = offset + 0x18
     return dram_mailbox_addr
@@ -563,18 +562,18 @@ def print_e820_table():
     efi_compatible_table_base = get_efi_compatible_table_base()
     e820_ptr = mem_read(efi_compatible_table_base + 0x22, 4)
     size = mem_read(efi_compatible_table_base + 0x26, 4)
-    logger.debug(',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,')
-    logger.debug('E820[no]: Start Block Address ---- End Block Address , type = Mem type')
-    logger.debug('``````````````````````````````````````````````````````````````````````')
+    logger.debug(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,")
+    logger.debug("E820[no]: Start Block Address ---- End Block Address , type = Mem type")
+    logger.debug("``````````````````````````````````````````````````````````````````````")
     while 1:
         base_addr = mem_read(e820_ptr + offset, 8)
         length = mem_read(e820_ptr + offset + 8, 8)
         mem_type = mem_read(e820_ptr + offset + 16, 4)
-        logger.debug(f'E820[{index:2d}]:  0x{base_addr:16X} - 0x{(base_addr + length):<16X}, mem type = 0X{mem_type:x}')
+        logger.debug(f"E820[{index:2d}]:  0x{base_addr:16X} - 0x{(base_addr + length):<16X}, mem type = 0X{mem_type:x}")
         e820_table_list[index] = [base_addr, length, mem_type]
         index = index + 1
         offset = offset + 20
         if offset >= size:
             break
-    logger.debug(',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,')
+    logger.debug(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,")
     return e820_table_list
