@@ -19,26 +19,29 @@
 #  SOFTWARE.
 
 
-
 class RootError(PermissionError):
     def __init__(self):
         self.message = "XmlCli Module requires Root"
         super().__init__(self.message)
+
 
 class XmlCliNotSupported(SystemError):
     def __init__(self):
         self.message = "XmlCli not supported/enabled on the Current BIOS"
         super().__init__(self.message)
 
+
 class InvalidXmlData(SystemError):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
 
+
 class BiosKnobsDataUnavailable(SystemError):
     def __init__(self):
         self.message = "Unable to get Xml Cli data from the system"
         super().__init__(self.message)
+
 
 class InvalidAccessMethod(ValueError):
     def __init__(self, access):

@@ -15,3 +15,11 @@ as steps to reproduce the issue or screenshots.
 ### Contributing Code
 
 Feel free to create Pull Request for any bugfix or new feature.
+
+### Running Flake8
+
+To check your code for style issues, run:
+
+```bash
+flake8 src
+```

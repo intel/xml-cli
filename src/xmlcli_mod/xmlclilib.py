@@ -55,6 +55,7 @@ def load_os_specific_access():
     access_class = getattr(module, f"{os_name}Access")
     return access_class()
 
+
 def set_cli_access():
     global cli_access
     if not cli_access:
@@ -67,6 +68,7 @@ def _check_cli_access():
         # not going to bother with a custom exception in code that needs to be
         # refactored
         raise SystemError("Uninitialized Access")
+
 
 def read_mem_block(address, size):
     """
@@ -373,7 +375,8 @@ def read_xml_details(dram_shared_mailbox_buffer):
             if leg_mb_offset > 0xFFFF:
                 gbt_xml_addr = mem_read(leg_mb_offset + const.LEGACYMB_XML_OFF, 4) + 4
             else:
-                gbt_xml_addr = read_buffer(dram_shared_mailbox_buffer, leg_mb_offset + const.LEGACYMB_XML_OFF, 4, const.HEX) + 4
+                dram_shared_mb_offset = leg_mb_offset + const.LEGACYMB_XML_OFF
+                gbt_xml_addr = read_buffer(dram_shared_mailbox_buffer, dram_shared_mb_offset, 4, const.HEX) + 4
             gbt_xml_size = mem_read(gbt_xml_addr - 4, 4)
     return gbt_xml_addr, gbt_xml_size
 
@@ -511,8 +514,9 @@ def read_dram_mb_addr_from_efi():
     signature = mem_read(g_st, 8)
     if signature != 0x5453595320494249:  # EFI System Table signature = 'IBI SYST'
         return 0
-    logger.debug(
-        f'EFI SYSTEM TABLE Address = 0x{g_st:X}  signature = \"{un_hex_li_fy(signature)[::-1]}\"    Revision = {mem_read(g_st + 8, 2):d}.{mem_read(g_st + 0xA, 2):d}')
+    logger.debug(f'EFI SYSTEM TABLE Address = 0x{g_st:X}')
+    logger.debug(f'signature = \"{un_hex_li_fy(signature)[::-1]}\" ')
+    logger.debug(f'Revision = {mem_read(g_st + 8, 2):d}.{mem_read(g_st + 0xA, 2):d}')
     count = 0
     firmware_ptr = mem_read(g_st + 0x18, 8)
     firmware_revision = mem_read(g_st + 0x20, 4)
@@ -566,7 +570,7 @@ def print_e820_table():
         base_addr = mem_read(e820_ptr + offset, 8)
         length = mem_read(e820_ptr + offset + 8, 8)
         mem_type = mem_read(e820_ptr + offset + 16, 4)
-        logger.debug(f'E820[{index:2d}]:  0x{base_addr:16X} ---- 0x{(base_addr + length):<16X}, mem type = 0X{mem_type:x} ')
+        logger.debug(f'E820[{index:2d}]:  0x{base_addr:16X} - 0x{(base_addr + length):<16X}, mem type = 0X{mem_type:x}')
         e820_table_list[index] = [base_addr, length, mem_type]
         index = index + 1
         offset = offset + 20

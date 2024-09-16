@@ -33,6 +33,7 @@ from xmlcli_mod.dataclasses.knobs import Knob
 
 log = logging.getLogger(__name__)
 
+
 class XmlCli:
     """
     A class for reading XML-based BIOS knobs through CLI access.

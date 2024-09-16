@@ -40,7 +40,6 @@ sphinx-rtd-theme = "*"
 script = "build.py"
 generate-setup-file = true
 
-
 [tool.black]
 max-line-length = 120
 exclude = [
@@ -57,4 +56,11 @@ ignore = [
     "E501",
     "E722",
     "W503"
+]
+
+[tool.flake8]
+max-line-length = 120
+count = true
+per-file-ignores = [
+    "__init__.py:F401",
 ]

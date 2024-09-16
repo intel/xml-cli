@@ -19,7 +19,6 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-import os
 import ctypes
 import binascii
 from pathlib import Path
@@ -140,7 +139,6 @@ class LinuxAccess:
 
     def mem_write(self, address, size, value):
         self.mem(address, size, value)  # list of size entries of 1 Byte
-
 
     def read_io(self, address, size):
         return self.io(address, size)
