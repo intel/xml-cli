@@ -25,8 +25,10 @@ from typing import Union
 
 @dataclass
 class Knob:
+    """Represents a knob as an object"""
+
     name: str
-    type: str
+    knob_type: str
     description: str
     default: Union[str, int]
     value: Union[str, int]

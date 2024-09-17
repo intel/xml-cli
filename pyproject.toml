@@ -28,8 +28,9 @@ defusedxml = "0.7.1"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "*"
-black = "*"
+flake8 = "*"
 flake8-pyproject = "*"
+flake8-import-order = "*"
 pytest = "*"
 pytest-mock = "*"
 pytest-cov = "*"
@@ -40,13 +41,14 @@ sphinx-rtd-theme = "*"
 script = "build.py"
 generate-setup-file = true
 
-[tool.black]
-line-length = 120
-
-
 [tool.flake8]
 max-line-length = 120
 count = true
 per-file-ignores = [
     "__init__.py:F401",
 ]
+import-order-style = "pycharm"
+
+[tool.mypy]
+files = "src"
+disable_error_code = "import-untyped"

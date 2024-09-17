@@ -25,8 +25,6 @@ import logging
 import platform
 
 import xmlcli_mod.common.constants as const
-
-
 from xmlcli_mod.common.errors import BiosKnobsDataUnavailable
 from xmlcli_mod.common.errors import InvalidXmlData
 from xmlcli_mod.common.errors import XmlCliNotSupported
@@ -252,7 +250,7 @@ def read_buffer(input_buffer, offset, size, input_type):
 
     :return: buffer read from input
     """
-    value_buffer = input_buffer[offset : offset + size]
+    value_buffer = input_buffer[offset:offset + size]
     value_string = ""
     if len(value_buffer) == 0:
         return 0

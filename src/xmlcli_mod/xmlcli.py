@@ -19,15 +19,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-import defusedxml.ElementTree as ET
 import logging
-
 from pathlib import Path
+from xml.etree.ElementTree import Element
 from xml.etree.ElementTree import ElementTree
 
+import defusedxml.ElementTree as ET
 from xmlcli_mod import xmlclilib
-from xmlcli_mod.common.utils import is_root
 from xmlcli_mod.common.errors import RootError
+from xmlcli_mod.common.utils import is_root, str_to_int
 from xmlcli_mod.dataclasses.knobs import Knob
 
 
@@ -72,7 +72,7 @@ class XmlCli:
             raise RootError()
 
         self._xml_string = ""
-        self.xml_data = None
+        self.xml_data = ElementTree(Element("root"))
         self._knobs = None
         xmlclilib.set_cli_access()
         xmlclilib.verify_xmlcli_support()
@@ -131,26 +131,31 @@ class XmlCli:
         Returns
         -------
         dict[str, Knob]
-            A dictionary where the keys are knob names and the values are Knob objects.
+            A dictionary where the keys are knob names and the values are Knob
+            objects. A value of -1 on Knob.value or Knob.default indicates that
+            the knob didn't have the corresponding value defined on the xml
         """
         knobs_dict = {}
         bios_knobs = self.xml_data.getroot().find("biosknobs")
-        for knob in bios_knobs.findall("knob"):
-            knob_name = knob.attrib["name"]
-            knob_attributes = {
-                "name": knob_name,
-                "type": knob.attrib.get("type", ""),
-                "description": knob.attrib.get("description", ""),
-                "value": knob.attrib.get("CurrentVal", ""),
-                "default": knob.attrib.get("default", ""),
-                "_size": knob.attrib["size"],
-                "_offset": knob.attrib["offset"],
-            }
-            if knob_attributes["type"] == "scalar":
-                knob_attributes["default"] = int(knob_attributes.get("default", 0), 16)
-                knob_attributes["value"] = int(knob_attributes.get("value", 0), 16)
+        if bios_knobs:
+            for knob in bios_knobs.findall("knob"):
+                knob_name = knob.attrib["name"]
+                knob_attributes = {
+                    "name": knob_name,
+                    "knob_type": knob.attrib.get("type", ""),
+                    "description": knob.attrib.get("description", ""),
+                    "value": knob.attrib.get("CurrentVal", -1),
+                    "default": knob.attrib.get("default", -1),
+                    "_size": int(knob.attrib["size"]),
+                    "_offset": int(knob.attrib["offset"]),
+                }
+                if knob_attributes["knob_type"] == "scalar":
+                    if isinstance(knob_attributes["default"], str):
+                        knob_attributes["default"] = str_to_int(knob_attributes["default"])
+                    if isinstance(knob_attributes["value"], str):
+                        knob_attributes["value"] = str_to_int(knob_attributes["value"])
 
-            knobs_dict[knob_name] = Knob(**knob_attributes)
+                knobs_dict[knob_name] = Knob(**knob_attributes)  # type: ignore
         return knobs_dict
 
     def get_knob(self, knob_name: str) -> Knob:

@@ -18,16 +18,4 @@ Feel free to create Pull Request for any bugfix or new feature.
 
 ### Running Flake8
 
-To check your code for style issues, run:
-
-```bash
-# Check if the code changes are compatible with PEP8
-flake8 src
-
-```
-```bash
-# see if there's any file that needs to be formatted with black
-black src --check   
-# let black format the files
-black src
-```
+To check your code for style issues, run flake8 and mypy:

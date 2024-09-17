@@ -34,3 +34,11 @@ def byte_to_int(data):
 def int_to_byte(data, size):
     data_dump = data.to_bytes(size, byteorder="little", signed=False)
     return data_dump
+
+
+def str_to_int(value: str) -> int:
+    """Convert a string to an integer checking if it's a hex value"""
+    if value.startswith("0x"):
+        return int(value, 16)
+    else:
+        return int(value)

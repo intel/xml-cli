@@ -19,8 +19,8 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-import ctypes
 import binascii
+import ctypes
 from pathlib import Path
 
 
