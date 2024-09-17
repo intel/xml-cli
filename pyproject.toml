@@ -52,3 +52,9 @@ import-order-style = "pycharm"
 [tool.mypy]
 files = "src"
 disable_error_code = "import-untyped"
+
+[tool.bandit]
+exclude_dirs = [
+    "tests",
+    "docs"
+]

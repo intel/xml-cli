@@ -21,8 +21,7 @@
 
 import logging
 from pathlib import Path
-from xml.etree.ElementTree import Element
-from xml.etree.ElementTree import ElementTree
+from xml.etree.ElementTree import Element, ElementTree  # nosec B405, not used for parsing xml data
 
 import defusedxml.ElementTree as ET
 from xmlcli_mod import xmlclilib
