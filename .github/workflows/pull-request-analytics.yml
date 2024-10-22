@@ -8,6 +8,10 @@ on:
       report_date_end:
         description: "Report date end(d/MM/yyyy)"
         required: false
+
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   create-report:
     name: "Create report"
