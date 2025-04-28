@@ -103,6 +103,9 @@ class UefiParserTest(UnitTestHelper):
   def test_write_to_json(self):
     self.parse_image(self.bios_image)
 
+  def test_replace_driver(self):
+    self.replace_ffs(self.bios_image, self.new_driver_file, self.replaced_image_file)
+
   def parse_image(self, bios_image):
     self.log.info(f"{'=' * 50}\n>>>>>>>>> PROCESSING IMAGE: {bios_image} <<<<<<<<<\n{'=' * 50}")
     binary_file_name = os.path.splitext(bios_image)[0]  # get filename without extension
@@ -133,6 +136,36 @@ class UefiParserTest(UnitTestHelper):
       uefi_parser.write_result_to_file(user_guid_out_file, output_dict=uefi_parser.stored_guids)
       # Validate whether content written in json or not
       self.assertGreater(os.path.getsize(user_guid_out_file), 0)
+
+  def replace_ffs(self, bios_image, driver_image, replaced_image):
+    self.log.info(f"{'=' * 50}\n>>>>>>>>> REPLACING DRIVER: {driver_image} <<<<<<<<<\n{'=' * 50}")
+    uefi_parser = bios_fw_parser.UefiParser(bin_file=bios_image,  # binary file to parse
+                                parsing_level=0,  # parsing level to manage number of parsing features
+                                base_address=0,  # (optional) provide base address of bios FV region to start the parsing (default 0x0)
+                                guid_to_store=[]  # if provided the guid for parsing then parser will look for every GUID in the bios image
+                                )
+
+    newffs_parser = bios_fw_parser.UefiParser(bin_file=driver_image,  # binary file to parse
+                                    parsing_level=0,  # parsing level to manage number of parsing features
+                                    base_address=0,  # (optional) provide base address of bios FV region to start the parsing (default 0x0)
+                                    guid_to_store=[]  # if provided the guid for parsing then parser will look for every GUID in the bios image
+                                    )
+
+    # parse bios image into a binary_tree
+    bios_output_dict = uefi_parser.parse_binary()
+
+    # parse driver ffs image into a binary tree node
+    ffs_output_dict = newffs_parser.parse_binary()
+    # get the target ffs guid through ffs file, extract the target tree node
+    TargetFfsGuid = newffs_parser.binary_tree.Position.ChildNodeList[0].Data.Name
+    newffsnode = newffs_parser.binary_tree.Position.ChildNodeList[0]
+
+    # replace the target ffs with new one
+    uefi_parser.find_ffs_node(TargetFfsGuid)
+    uefi_parser.ReplaceFfs(newffsnode, uefi_parser.TargetFfsList[0])
+    uefi_parser.binary_tree.WholeTreeData = b''
+    uefi_parser.Encapsulate_binary(uefi_parser.binary_tree)
+    uefi_parser.dump_binary(replaced_image)
 
   def test_compare_with_old(self):
     for bios_image in self.bios_roms:
