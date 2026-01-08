@@ -710,9 +710,10 @@ class UefiParser(object):
     }
     try:
       import xmlcli
-      output_dict["module_version"] = xmlcli._version.__version__.vstring
+      ver = xmlcli._version.__version__
+      output_dict["module_version"] = ver.vstring if hasattr(ver, 'vstring') else str(ver)
       del xmlcli
-    except ImportError or AttributeError:
+    except (ImportError, AttributeError):
       pass
 
     with open(file_path, "w") as f:

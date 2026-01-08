@@ -15,7 +15,7 @@ MAJOR = 2
 # MINOR ------------
 MINOR = 0
 # BUILD ------
-BUILD = 5  # or __revision__
+BUILD = 6  # or __revision__
 # TAG -------
 TAG = ""
 
