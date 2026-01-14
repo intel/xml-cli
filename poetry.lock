@@ -221,15 +221,15 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "filelock"
-version = "3.19.1"
+version = "3.20.1"
 description = "A platform independent file lock."
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 markers = "python_version == \"3.9\""
 files = [
-    {file = "filelock-3.19.1-py3-none-any.whl", hash = "sha256:d38e30481def20772f5baf097c122c3babc4fcdb7e14e57049eb9d88c6dc017d"},
-    {file = "filelock-3.19.1.tar.gz", hash = "sha256:66eda1888b0171c998b35be2bcc0f6d75c388a7ce20c3f3f37aa8e96c2dddf58"},
+    {file = "filelock-3.20.1-py3-none-any.whl", hash = "sha256:b62b3b1e7d767d5f4ca9e7572fb98bcbef0fa91e17a57f1e3c5afe7e2c6c7f7e"},
+    {file = "filelock-3.20.1.tar.gz", hash = "sha256:918e1e98d5d51e45f7a0e21b9e75f2149cfdb1bc7a6b2a4e7dc2c7d05d1d74ae"},
 ]
 
 [[package]]
