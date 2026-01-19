@@ -39,12 +39,12 @@ jobs:
         python-version: ["3.8", "3.9", "3.10"]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
-    - uses: abatilo/actions-poetry@v3
+    - uses: abatilo/actions-poetry@v4
       with:
         poetry-version: 1.4.0
     - name: Install dependencies
