@@ -36,10 +36,11 @@ class RegistryListener(object):
       pass
       # raise utils.XmlCliException("Unsafe file path used...")
     self.command_method_map = OrderedDict({
-      "all"         : CMD_MAP("all", self.command_all, "Run All"),
-      "savexml"     : CMD_MAP("savexml", self.command_savexml, "Save XML"),
-      "generatejson": CMD_MAP("generatejson", self.command_generate_json, "Parse firmware as json"),
-      "shell"       : CMD_MAP("shell", self.command_launch_shell, "Launch Shell"),
+      "all"          : CMD_MAP("all", self.command_all, "Run All"),
+      "savexml"      : CMD_MAP("savexml", self.command_savexml, "Save XML"),
+      "generatejson" : CMD_MAP("generatejson", self.command_generate_json, "Parse firmware as json"),
+      "analyze_uefi" : CMD_MAP("analyze_uefi", self.command_analyze_uefi, "Analyze UEFI Firmware and View"),
+      "shell"        : CMD_MAP("shell", self.command_launch_shell, "Launch Shell"),
     })
 
   def create_registry_file(self, context_menu_name="XmlCli Menu", icon=""):
@@ -98,6 +99,12 @@ class RegistryListener(object):
     output = uefi_parser.sort_output_fv(output)
     output_json_file = os.path.join(self.output_directory, "{}.json".format(self.binary_file_name))
     uefi_parser.write_result_to_file(output_json_file, output_dict=output)
+    return output_json_file
+
+  def command_analyze_uefi(self):
+    output_json_file = self.command_generate_json()
+    from xmlcli.modules.uefi_analyzer import cli
+    cli.analyze_binary(output_json_file)
 
   def command_savexml(self):
     output_xml_file = os.path.join(self.output_directory, "{}.xml".format(self.binary_file_name))

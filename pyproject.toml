@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xmlcli"
-version = "2.0.5"
+version = "2.0.6"
 description = "UFFAF - UEFI Firmware Foundational Automation Framework (formerly Xml-Cli)"
 authors = ["Gahan Saraya <gahan.saraiya@intel.com>"]
 maintainers = ["Intel <xmlcli@intel.com>"]
@@ -55,3 +55,4 @@ indent-size = 2
 
 [tool.poetry.scripts]
 xmlcli = { reference = "xmlcli.start_xmlcli:cli", type = "console" }
+uefi-analyze = { reference = "xmlcli.modules.uefi_analyzer.cli:main", type = "console" }
