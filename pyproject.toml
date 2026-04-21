@@ -1,38 +1,41 @@
-[tool.poetry]
+[project]
 name = "xmlcli"
 version = "2.0.6"
 description = "UFFAF - UEFI Firmware Foundational Automation Framework (formerly Xml-Cli)"
-authors = ["Gahan Saraya <gahan.saraiya@intel.com>"]
-maintainers = ["Intel <xmlcli@intel.com>"]
-license = "BSD 3-Clause License"
+authors = [{name = "Gahan Saraya", email = "gahan.saraiya@intel.com"}]
+maintainers = [{name = "Intel", email = "xmlcli@intel.com"}]
+license = "BSD-3-Clause"
 readme = "README.md"
-homepage = "https://github.com/intel/xml-cli"
 keywords = ["uffaf", "xmlcli", "xml-cli", "framework", "automation", "validation", "bios", "xml"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
-    "License :: OSI Approved :: BSD License",
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
-packages = [{include = "xmlcli", from = "src"}]
+requires-python = ">=3.10"
+dependencies = [
+    "defusedxml>=0.6.0"
+]
 
-[tool.poetry.dependencies]
-python = ">=3.9"
-defusedxml = ">=0.6.0"
+[project.urls]
+Homepage = "https://github.com/intel/xml-cli"
+Repository = "https://github.com/intel/xml-cli"
+
+[project.scripts]
+xmlcli = "xmlcli.start_xmlcli:cli"
+uefi-analyze = "xmlcli.modules.uefi_analyzer.cli:main"
+
+[tool.poetry]
+packages = [{include = "xmlcli", from = "src"}]
 
 [tool.poetry.group.dev.dependencies]
 tox = ">=3.23.0"
 pygments = ">=2.20.0"
-requests = [
-    {version = ">=2.33.0", python = ">=3.10"},
-    {version = ">=2.31.0,<2.33.0", python = ">=3.9,<3.10"}
-]
+requests = ">=2.33.0"
+filelock = ">=3.20.1"
 jinja2 = "^3.1.6"
 babel = ">=2.9.1"
 sphinx = ">=4.0.2"
@@ -57,6 +60,3 @@ exclude = [
 ignore = "E501"
 indent-size = 2
 
-[tool.poetry.scripts]
-xmlcli = { reference = "xmlcli.start_xmlcli:cli", type = "console" }
-uefi-analyze = { reference = "xmlcli.modules.uefi_analyzer.cli:main", type = "console" }
