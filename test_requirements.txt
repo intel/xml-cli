@@ -7,6 +7,6 @@ pytest >= 7.4.3
 pytest-html >= 4.1.0
 setuptools >= 80.9.0
 
-urllib3>=2.5.0 # not directly required, pinned by Snyk to avoid a vulnerability
+urllib3>=2.7.0 # not directly required, pinned by Snyk to avoid a vulnerability
 requests>=2.33.0 # not directly required, pinned by Snyk to avoid a vulnerability
 zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
