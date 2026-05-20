@@ -33,6 +33,8 @@ OFFLINE_MODE = TEST_SUITE_CONFIG.getboolean("TEST_SETTINGS", "OFFLINE_MODE")
 ACCESS_METHOD = TEST_SUITE_CONFIG.get("TEST_SETTINGS", "ACCESS_METHOD")
 RUN_OPTIONAL_TEST = TEST_SUITE_CONFIG.getboolean("TEST_SETTINGS", "RUN_OPTIONAL_TEST")
 BIOS_IMAGES_DIR = os.path.abspath(TEST_SUITE_CONFIG.get("TEST_SETTINGS", "BIOS_IMAGES_DIR"))
+NEW_DRIVER_FILE = os.path.abspath(TEST_SUITE_CONFIG.get("TEST_SETTINGS", "NEW_DRIVER_FILE"))
+REPLACED_IMAGE_FILE = os.path.abspath(TEST_SUITE_CONFIG.get("TEST_SETTINGS", "REPLACED_IMAGE_FILE"))
 LITE_FEATURE_TESTING = TEST_SUITE_CONFIG.getboolean("TEST_SETTINGS", "LITE_FEATURE_TESTING")
 
 LOG_TITLE = TEST_SUITE_CONFIG.get("LOG_SETTINGS", "LOGGER_TITLE")
@@ -88,6 +90,14 @@ class UnitTestHelper(unittest.TestCase):
   @property
   def bios_image_dir(self):
     return BIOS_IMAGES_DIR
+
+  @property
+  def new_driver_file(self):
+    return NEW_DRIVER_FILE
+
+  @property
+  def replaced_image_file(self):
+    return REPLACED_IMAGE_FILE
 
   @property
   def bios_image(self):

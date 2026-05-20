@@ -12,7 +12,6 @@ try:
 except ModuleNotFoundError as e:
   DescriptorRegion = None
 
-
 __version__ = "0.0.1"
 __author__ = "Gahan Saraiya"
 
@@ -53,6 +52,16 @@ def is_bios(bin_file):
   bios_header = EfiFirmwareVolumeHeader.read_from(bin_file)
   return FV_SIGNATURE == bios_header.Signature
 
+def struct2stream(target_struct):
+    length = ctypes.sizeof(target_struct)
+    p = ctypes.cast(ctypes.pointer(target_struct), ctypes.POINTER(ctypes.c_char * length))
+    return p.contents.raw
+
+def get_pad_size(size: int, alignment: int):
+    if size % alignment == 0:
+        return 0
+    pad_Size = alignment - size % alignment
+    return pad_Size
 
 def read_structure(method, base_structure, buffer, buffer_pointer):
   """Read Valid structure
@@ -170,6 +179,7 @@ EFI_FV_FILE_ATTRIB_MEMORY_MAPPED = 0x00000200
 # i.e. EFI_FVB2_ALIGNMENT_128 will be 0x00070000
 EFI_FVB2_ALIGNMENT = lambda size=None: "0x001F0000" if not size else f"0x{size:0>4x}0000"
 EFI_FVB2_WEAK_ALIGNMENT = 0x80000000
+EFI_FVB2_ERASE_POLARITY = 0x00000800
 
 
 class EfiTime(utils.StructureHelper):  # 16 bytes
@@ -526,6 +536,33 @@ class EfiFirmwareVolumeHeader(utils.StructureHelper):
     result.pop("Checksum")
     return result
 
+def Refine_EfiFirmwareVolumeHeader(nums):
+  class EfiFirmwareVolumeHeader(utils.StructureHelper):
+    # source: Edk2/BaseTools/Source/C/Include/Common/PiFirmwareVolume.h
+    _fields_ = [
+      ("ZeroVector", ctypes.ARRAY(ctypes.c_uint8, 16)),
+      ("FileSystemGuid", utils.Guid),  # EFI_GUID
+      ("FvLength", ctypes.c_uint64),
+      ("Signature", ctypes.ARRAY(ctypes.c_char, 4)),  # actually it's a signature of 4 characters... (UINT32 Signature)
+      ("Attributes", EFI_FVB_ATTRIBUTES_2),  # UINT32 EFI_FVB_ATTRIBUTES_2
+      ("HeaderLength", ctypes.c_uint16),
+      ("Checksum", ctypes.c_uint16),
+      ("ExtHeaderOffset", ctypes.c_uint16),
+      ("Reserved", ctypes.ARRAY(ctypes.c_uint8, 1)),
+      ("Revision", ctypes.c_uint8),
+      ("BlockMap", ctypes.ARRAY(EfiFvBlockMapEntry, nums))  # EFI_FV_BLOCK_MAP_ENTRY
+    ]
+
+    @property
+    def get_guid(self):
+      return self.FileSystemGuid
+
+    def dump_dict(self):
+      result = super(EfiFirmwareVolumeHeader, self).dump_dict()
+      result.pop("BlockMap")
+      result.pop("Checksum")
+      return result
+  return EfiFirmwareVolumeHeader
 
 class EfiFirmwareVolumeExtHeader(utils.StructureHelper):
   # source: Edk2/BaseTools/Source/C/Include/Common/PiFirmwareVolume.h
@@ -554,6 +591,15 @@ class EfiFirmwareVolumeExtEntryOemType(utils.StructureHelper):
     ("TypeMask", ctypes.c_uint32)
   ]
 
+def Refine_FV_EXT_ENTRY_OEM_TYPE_Header(nums: int):
+  class EfiFirmwareVolumeExtEntryOemType(utils.StructureHelper):
+    # source: Edk2/BaseTools/Source/C/Include/Common/PiFirmwareVolume.h
+    _fields_ = [
+      ("Hdr", EfiFirmwareVolumeExtEntry),
+      ("TypeMask", ctypes.c_uint32),
+      ('Types',    ctypes.ARRAY(utils.Guid, nums))
+      ]
+  return EfiFirmwareVolumeExtEntryOemType()
 
 class EfiFirmwareVolumeExtEntryGuidType(utils.StructureHelper):
   # source: Edk2/BaseTools/Source/C/Include/Common/PiFirmwareVolume.h
@@ -566,6 +612,20 @@ class EfiFirmwareVolumeExtEntryGuidType(utils.StructureHelper):
   def get_guid(self):
     return self.FormatType
 
+def Refine_FV_EXT_ENTRY_GUID_TYPE_Header(nums: int):
+  class EfiFirmwareVolumeExtEntryGuidType(utils.StructureHelper):
+    # source: Edk2/BaseTools/Source/C/Include/Common/PiFirmwareVolume.h
+    _fields_ = [
+      ("Hdr", EfiFirmwareVolumeExtEntry),
+      ("FormatType", utils.Guid),
+      ('Data',       ctypes.ARRAY(ctypes.c_uint8, nums))
+    ]
+    @property
+
+    def get_guid(self):
+      return self.FormatType
+
+  return EfiFirmwareVolumeExtEntryGuidType()
 
 class EfiFirmwareVolumeExtEntryUsedSizeType(utils.StructureHelper):
   # source: Edk2/BaseTools/Source/C/Include/Common/PiFirmwareVolume.h

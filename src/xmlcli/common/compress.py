@@ -8,9 +8,9 @@ from collections import namedtuple
 from datetime import datetime
 
 # Custom imports
-from . import utils
-from . import logger
-from . import configurations
+import utils
+import logger
+import configurations
 
 __author__ = "Gahan Saraiya"
 
