@@ -8,7 +8,7 @@ __author__ = ['Amol Shinde', 'Gahan Saraiya']
 import os
 import re
 import binascii
-
+import ast
 
 # Custom Imports
 from .common.logger import log
@@ -860,6 +860,80 @@ def generate_knobs_data_bin(xml_file, knobs_ini_file, bin_file, operation='Prog'
       file_ptr.write(binascii.unhexlify(knob_buffer_str))
   return buffer_map, knob_buffer_str
 
+def _safe_eval_depex(expr):
+  """
+  Safely evaluate a pre-processed depex sub-expression using a restricted AST
+  walk.  Only integer/boolean literals, list literals, boolean operators
+  (and/or/not), and comparison operators (==, !=, <, <=, >, >=, in, not in)
+  are permitted.  Any other AST construct (calls, attribute access, imports,
+  etc.) raises ValueError, preventing arbitrary-code execution.
+  """
+  _ALLOWED_CMP_OPS = (
+    ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE,
+    ast.In, ast.NotIn,
+  )
+
+  def _eval(node):
+    if isinstance(node, ast.Expression):
+      return _eval(node.body)
+    # Integer / float / bool literals (Python 3.8+)
+    if isinstance(node, ast.Constant):
+      if not isinstance(node.value, (bool, int, float)):
+        raise ValueError(f'Disallowed literal type: {type(node.value).__name__!r}')
+      return node.value
+    # Python 3.7 compatibility: ast.Num and ast.NameConstant
+    if hasattr(ast, 'Num') and isinstance(node, ast.Num):  # pragma: no cover
+      return node.n
+    if hasattr(ast, 'NameConstant') and isinstance(node, ast.NameConstant):  # pragma: no cover
+      return node.value
+    # List literal — used by _LIST_ substitution: (val in [a, b, c])
+    if isinstance(node, ast.List):
+      return [_eval(e) for e in node.elts]
+    # Boolean operators: and / or
+    if isinstance(node, ast.BoolOp):
+      if isinstance(node.op, ast.And):
+        return all(_eval(v) for v in node.values)
+      if isinstance(node.op, ast.Or):
+        return any(_eval(v) for v in node.values)
+      raise ValueError(f'Disallowed BoolOp: {type(node.op).__name__!r}')
+    # Unary operator: not
+    if isinstance(node, ast.UnaryOp):
+      if isinstance(node.op, ast.Not):
+        return not _eval(node.operand)
+      raise ValueError(f'Disallowed UnaryOp: {type(node.op).__name__!r}')
+    # Comparison operators
+    if isinstance(node, ast.Compare):
+      for op in node.ops:
+        if not isinstance(op, _ALLOWED_CMP_OPS):
+          raise ValueError(f'Disallowed comparison op: {type(op).__name__!r}')
+      left = _eval(node.left)
+      for op, comp in zip(node.ops, node.comparators):
+        right = _eval(comp)
+        if isinstance(op, ast.Eq):
+          result = (left == right)
+        elif isinstance(op, ast.NotEq):
+          result = (left != right)
+        elif isinstance(op, ast.Lt):
+          result = (left < right)
+        elif isinstance(op, ast.LtE):
+          result = (left <= right)
+        elif isinstance(op, ast.Gt):
+          result = (left > right)
+        elif isinstance(op, ast.GtE):
+          result = (left >= right)
+        elif isinstance(op, ast.In):
+          result = (left in right)
+        elif isinstance(op, ast.NotIn):
+          result = (left not in right)
+        if not result:
+          return False
+        left = right
+      return True
+    raise ValueError(f'Disallowed AST node: {type(node).__name__!r}')
+
+  tree = ast.parse(expr.strip(), mode='eval')
+  return _eval(tree)
+
 def evaluate_depex(depex, knob_name, knobs_value_map):
   """
   Evaluate dependency expression `depex`
@@ -907,7 +981,7 @@ def evaluate_depex(depex, knob_name, knobs_value_map):
     sub_expression = sub_expression.replace('OR', 'or')
     sub_expression = sub_expression.replace('AND', 'and')
     try:
-      result = eval(sub_expression)
+      result = _safe_eval_depex(sub_expression)
       if operation in ['Gif', 'Sif', 'Dif']:
         result = not result
     except Exception as ex:

@@ -7,6 +7,7 @@ import sys
 import time
 import glob
 import copy
+import html
 
 # Custom Imports
 from . import XmlCliLib as clb
@@ -1082,7 +1083,7 @@ def GenerateKnobsSection(BiosKnobDict, HiiStrDict, HiiUqiStrDict, NvRamFvListBuf
         continue
       nvram_knob_size = BiosKnobDict[VarCount]['KnobDict'][KnobOffset]['KnobSzHii']
       xml_knob_size = nvram_knob_size
-      CurDepex  = BiosKnobDict[VarCount]['KnobDict'][KnobOffset]['Depex']
+      CurDepex  = html.escape(BiosKnobDict[VarCount]['KnobDict'][KnobOffset]['Depex'])
       IfrPrompt = BiosKnobDict[VarCount]['KnobDict'][KnobOffset]['Prompt']
       IfrHelp = BiosKnobDict[VarCount]['KnobDict'][KnobOffset]['Help']
       HiiDefVal = BiosKnobDict[VarCount]['KnobDict'][KnobOffset]['HiiDefVal']
@@ -1135,7 +1136,7 @@ def GenerateKnobsSection(BiosKnobDict, HiiStrDict, HiiUqiStrDict, NvRamFvListBuf
                 if(CurKnobName == BiosKnobDict[VarCount]['DupKnobDict'][DupIndex]['DupKnobName']):
                   if(KnobPrsCnt == FoundInstance):
                     PrintOptionList = True
-                    CurDepex = BiosKnobDict[VarCount]['DupKnobDict'][DupIndex]['DupDepex']
+                    CurDepex = html.escape(BiosKnobDict[VarCount]['DupKnobDict'][DupIndex]['DupDepex'])
                     CurInst = CurInst + 1
                     DupXmlKnobName = CurKnobName + '_inst_%d' %CurInst
                     if (HiiUqiStrDict == {}):
