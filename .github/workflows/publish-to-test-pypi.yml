@@ -33,8 +33,8 @@ jobs:
     name: Build and publish Python 🐍 distributions 📦 to TestPyPI
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: abatilo/actions-poetry@v3
+    - uses: actions/checkout@v7
+    - uses: abatilo/actions-poetry@v4
       with:
         poetry-version: 1.4.0
     - name: Publish distribution 📦 to Test PyPI
