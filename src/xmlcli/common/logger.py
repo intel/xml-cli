@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 
 # Custom imports
-from .configurations import XMLCLI_CONFIG, XMLCLI_DIR, OUT_DIR, PLATFORM, PY_VERSION, ENCODING, STATUS_CODE_RECORD_FILE
+from configurations import XMLCLI_CONFIG, XMLCLI_DIR, OUT_DIR, PLATFORM, PY_VERSION, ENCODING, STATUS_CODE_RECORD_FILE
 
 ###############################################################################
 # START: LOG Settings #########################################################
