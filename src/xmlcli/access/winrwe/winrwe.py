@@ -4,6 +4,7 @@ __author__ = "Gahan Saraiya"
 # Built-in imports
 import os
 import binascii
+import subprocess
 
 # Custom imports
 from ..base import base
@@ -33,22 +34,22 @@ class WinRweAccess(base.BaseAccess):
     return 0
 
   def warm_reset(self):
-    os.system('{} /Nologo /Min /Command="O 0xCF9 0x06; RwExit"'.format(self.rw_executable))
+    subprocess.run([self.rw_executable, "/Nologo", "/Min", "/Command=O 0xCF9 0x06; RwExit"], shell=False)
 
   def cold_reset(self):
-    os.system('{} /Nologo /Min /Command="O 0xCF9 0x0E; RwExit"'.format(self.rw_executable))
+    subprocess.run([self.rw_executable, "/Nologo", "/Min", "/Command=O 0xCF9 0x0E; RwExit"], shell=False)
 
   def mem_block(self, address, size):
-    os.system('{} /Nologo /Min /Command="SAVE {} Memory 0x{:x} 0x{:x}; RwExit"'.format(self.rw_executable, self.temp_data_bin, address, size))
+    subprocess.run([self.rw_executable, "/Nologo", "/Min", "/Command=SAVE {} Memory 0x{:x} 0x{:x}; RwExit".format(self.temp_data_bin, address, size)], shell=False)
     with open(self.temp_data_bin, 'rb') as f:
       data_buffer = f.read()
     return data_buffer
 
   def mem_save(self, filename, address, size):
-    os.system('{} /Nologo /Min /Command="SAVE {} Memory 0x{:x} 0x{:x}; RwExit"'.format(self.rw_executable, filename, address, size))
+    subprocess.run([self.rw_executable, "/Nologo", "/Min", "/Command=SAVE {} Memory 0x{:x} 0x{:x}; RwExit".format(filename, address, size)], shell=False)
 
   def mem_read(self, address, size):
-    os.system('{} /Nologo /Min /Command="SAVE {} Memory 0x{:x} 0x{:x}; RwExit"'.format(self.rw_executable, self.temp_data_bin, address, size))
+    subprocess.run([self.rw_executable, "/Nologo", "/Min", "/Command=SAVE {} Memory 0x{:x} 0x{:x}; RwExit".format(self.temp_data_bin, address, size)], shell=False)
     with open(self.temp_data_bin, 'rb') as f:
       data_buffer = f.read()
     return int(binascii.hexlify(data_buffer[0:size][::-1]), 16)
@@ -60,15 +61,15 @@ class WinRweAccess(base.BaseAccess):
         cmd = "W{} 0x{:x} 0x{:x}".format(word_size, address, value)
       else:
         cmd = "W{} 0x{:x} 0x{:x}; W32 0x{:x} 0x{:x}".format(32, address, (value & 0xFFFFFFFF), (address + 4), (value >> 32))
-      os.system('{} /Nologo /Min /Command="{}; RwExit"'.format(self.rw_executable, cmd))
+      subprocess.run([self.rw_executable, "/Nologo", "/Min", "/Command={}; RwExit".format(cmd)], shell=False)
 
   def load_data(self, filename, address):
-    os.system('{} /Nologo /Min /Command="LOAD {} Memory 0x{:x}; RwExit"'.format(self.rw_executable, filename, address))
+    subprocess.run([self.rw_executable, "/Nologo", "/Min", "/Command=LOAD {} Memory 0x{:x}; RwExit".format(filename, address)], shell=False)
 
   def read_io(self, address, size):
     if size in (1, 2, 4):
       cmd = "I{} 0x{:x}".format("" if size == 1 else 8*size, address)
-      os.system('{} /Nologo /Min /LogFile={} /Command="{}; RwExit"'.format(self.rw_executable, self.result_text, cmd))
+      subprocess.run([self.rw_executable, "/Nologo", "/Min", "/LogFile={}".format(self.result_text), "/Command={}; RwExit".format(cmd)], shell=False)
     with open(self.result_text, 'r') as f:
       result = f.read()
     temp_str = result.split('=')
@@ -80,10 +81,10 @@ class WinRweAccess(base.BaseAccess):
   def write_io(self, address, size, value):
     if size in (1, 2, 4):
       cmd = "O{} 0x{:x} 0x{:x}".format("" if size == 1 else 8*size, address, value)
-      os.system('{} /Nologo /Min /Command="{}; RwExit"'.format(self.rw_executable, cmd))
+      subprocess.run([self.rw_executable, "/Nologo", "/Min", "/Command={}; RwExit".format(cmd)], shell=False)
 
   def trigger_smi(self, smi_value):
-    os.system('{} /Nologo /Min /Command="O 0x{:x} 0x{:x}; RwExit"'.format(self.rw_executable, 0xB2, smi_value))
+    subprocess.run([self.rw_executable, "/Nologo", "/Min", "/Command=O 0x{:x} 0x{:x}; RwExit".format(0xB2, smi_value)], shell=False)
 
   def read_msr(self, Ap, address):
     return 0
