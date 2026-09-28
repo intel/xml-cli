@@ -6,6 +6,7 @@ __author__ = "Gahan Saraiya"
 
 # Built-in imports
 import os
+import stat
 
 # Custom imports
 from .. import XmlCli as cli
@@ -33,7 +34,14 @@ def move_output_files_to(destination_path):
     log.error(f'{destination_path} does not exists, not able to move out files\n')
     return 1
   new_out_dir = os.path.join(destination_path, 'out')
+  if os.path.islink(new_out_dir):
+    log.error(f'{new_out_dir} is a symlink, refusing to move out files\n')
+    return 1
   os.makedirs(new_out_dir, exist_ok=True)
+  # re-check after makedirs to close the pre-create/rmdir-then-symlink TOCTOU window
+  if stat.S_ISLNK(os.lstat(new_out_dir).st_mode):
+    log.error(f'{new_out_dir} is a symlink, refusing to move out files\n')
+    return 1
   for root, dirs, files in os.walk(clb.TempFolder):
     for name in files:
       if not (name == 'Makefile'):
