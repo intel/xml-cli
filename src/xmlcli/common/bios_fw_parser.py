@@ -223,7 +223,9 @@ class UefiParser(object):
   def is_valid_fv(firmware_volume_header):
     has_valid_signature = firmware_volume_header.Signature == structure.FV_SIGNATURE
     has_valid_zero_vector = utils.get_integer_value(firmware_volume_header.get_value("ZeroVector")) == 0
-    if has_valid_signature and has_valid_zero_vector:
+    # FvLength must be non-zero to guarantee forward progress on the recursive parse walk
+    has_valid_length = utils.get_integer_value(firmware_volume_header.get_value("FvLength")) > 0
+    if has_valid_signature and has_valid_zero_vector and has_valid_length:
       return True
     else:
       log.debug(firmware_volume_header.dump_dict())
