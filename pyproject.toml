@@ -28,7 +28,12 @@ Repository = "https://github.com/intel/xml-cli"
 xmlcli = "xmlcli.start_xmlcli:cli"
 uefi-analyze = "xmlcli.modules.uefi_analyzer.cli:main"
 
+
 [tool.poetry]
+name = "xmlcli"
+version = "2.0.6"
+description = "UFFAF - UEFI Firmware Foundational Automation Framework (formerly Xml-Cli)"
+authors = ["Gahan Saraya <gahan.saraiya@intel.com>"]
 packages = [{include = "xmlcli", from = "src"}]
 
 [tool.poetry.group.dev.dependencies]

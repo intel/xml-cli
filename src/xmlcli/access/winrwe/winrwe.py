@@ -3,7 +3,9 @@ __author__ = "Gahan Saraiya"
 
 # Built-in imports
 import os
+import shutil
 import binascii
+import subprocess
 
 # Custom imports
 from ..base import base
@@ -11,14 +13,36 @@ from ..base import base
 
 __all__ = ["WinRweAccess"]
 
+# RW.exe parses its own /Command= mini-language: `;` separates statements and whitespace separates tokens.
+_RW_COMMAND_UNSAFE_CHARS = ";\"' \t\r\n"
+
 
 class WinRweAccess(base.BaseAccess):
   def __init__(self, access_name="winrwe"):
     self.current_directory = os.path.dirname(os.path.abspath(__file__))
     super(WinRweAccess, self).__init__(access_name=access_name, child_class_directory=self.current_directory)
     self.rw_executable = self.config.get(access_name.upper(), "RW_EXE")
-    self.temp_data_bin = self.config.get(access_name.upper(), "TEMP_DATA_BIN")
-    self.result_text = self.config.get(access_name.upper(), "RESULT_TEXT")
+    self.temp_data_bin = self._validate_rw_path(self.config.get(access_name.upper(), "TEMP_DATA_BIN"), "TEMP_DATA_BIN")
+    self.result_text = self._validate_rw_path(self.config.get(access_name.upper(), "RESULT_TEXT"), "RESULT_TEXT")
+
+  @staticmethod
+  def _validate_rw_path(path, setting_name):
+    if not path or any(character in path for character in _RW_COMMAND_UNSAFE_CHARS):
+      raise ValueError("{} must be a non-empty path without whitespace, quotes or ';' (got {!r})".format(setting_name, path))
+    return path
+
+  @staticmethod
+  def _copy_unless_same(source, destination):
+    if os.path.exists(destination) and os.path.samefile(source, destination):
+      return
+    shutil.copyfile(source, destination)
+
+  def _run_rw(self, command, log_file=None):
+    arguments = [self.rw_executable, "/Nologo", "/Min"]
+    if log_file:
+      arguments.append("/LogFile={}".format(log_file))
+    arguments.append("/Command={}; RwExit".format(command))
+    return subprocess.run(arguments, shell=False)  # nosec B603 - fixed argv, no shell, no caller-controlled tokens
 
   def halt_cpu(self, delay=0):
     return 0
@@ -33,22 +57,24 @@ class WinRweAccess(base.BaseAccess):
     return 0
 
   def warm_reset(self):
-    os.system('{} /Nologo /Min /Command="O 0xCF9 0x06; RwExit"'.format(self.rw_executable))
+    self._run_rw("O 0xCF9 0x06")
 
   def cold_reset(self):
-    os.system('{} /Nologo /Min /Command="O 0xCF9 0x0E; RwExit"'.format(self.rw_executable))
+    self._run_rw("O 0xCF9 0x0E")
 
   def mem_block(self, address, size):
-    os.system('{} /Nologo /Min /Command="SAVE {} Memory 0x{:x} 0x{:x}; RwExit"'.format(self.rw_executable, self.temp_data_bin, address, size))
+    self._run_rw("SAVE {} Memory 0x{:x} 0x{:x}".format(self.temp_data_bin, address, size))
     with open(self.temp_data_bin, 'rb') as f:
       data_buffer = f.read()
     return data_buffer
 
   def mem_save(self, filename, address, size):
-    os.system('{} /Nologo /Min /Command="SAVE {} Memory 0x{:x} 0x{:x}; RwExit"'.format(self.rw_executable, filename, address, size))
+    # RW only ever writes to the internal temp path, so `filename` never reaches its command parser.
+    self._run_rw("SAVE {} Memory 0x{:x} 0x{:x}".format(self.temp_data_bin, address, size))
+    self._copy_unless_same(self.temp_data_bin, filename)
 
   def mem_read(self, address, size):
-    os.system('{} /Nologo /Min /Command="SAVE {} Memory 0x{:x} 0x{:x}; RwExit"'.format(self.rw_executable, self.temp_data_bin, address, size))
+    self._run_rw("SAVE {} Memory 0x{:x} 0x{:x}".format(self.temp_data_bin, address, size))
     with open(self.temp_data_bin, 'rb') as f:
       data_buffer = f.read()
     return int(binascii.hexlify(data_buffer[0:size][::-1]), 16)
@@ -60,15 +86,17 @@ class WinRweAccess(base.BaseAccess):
         cmd = "W{} 0x{:x} 0x{:x}".format(word_size, address, value)
       else:
         cmd = "W{} 0x{:x} 0x{:x}; W32 0x{:x} 0x{:x}".format(32, address, (value & 0xFFFFFFFF), (address + 4), (value >> 32))
-      os.system('{} /Nologo /Min /Command="{}; RwExit"'.format(self.rw_executable, cmd))
+      self._run_rw(cmd)
 
   def load_data(self, filename, address):
-    os.system('{} /Nologo /Min /Command="LOAD {} Memory 0x{:x}; RwExit"'.format(self.rw_executable, filename, address))
+    # Stage the caller's file through the internal temp path so `filename` never reaches RW's command parser.
+    self._copy_unless_same(filename, self.temp_data_bin)
+    self._run_rw("LOAD {} Memory 0x{:x}".format(self.temp_data_bin, address))
 
   def read_io(self, address, size):
     if size in (1, 2, 4):
       cmd = "I{} 0x{:x}".format("" if size == 1 else 8*size, address)
-      os.system('{} /Nologo /Min /LogFile={} /Command="{}; RwExit"'.format(self.rw_executable, self.result_text, cmd))
+      self._run_rw(cmd, log_file=self.result_text)
     with open(self.result_text, 'r') as f:
       result = f.read()
     temp_str = result.split('=')
@@ -80,10 +108,10 @@ class WinRweAccess(base.BaseAccess):
   def write_io(self, address, size, value):
     if size in (1, 2, 4):
       cmd = "O{} 0x{:x} 0x{:x}".format("" if size == 1 else 8*size, address, value)
-      os.system('{} /Nologo /Min /Command="{}; RwExit"'.format(self.rw_executable, cmd))
+      self._run_rw(cmd)
 
   def trigger_smi(self, smi_value):
-    os.system('{} /Nologo /Min /Command="O 0x{:x} 0x{:x}; RwExit"'.format(self.rw_executable, 0xB2, smi_value))
+    self._run_rw("O 0x{:x} 0x{:x}".format(0xB2, smi_value))
 
   def read_msr(self, Ap, address):
     return 0
