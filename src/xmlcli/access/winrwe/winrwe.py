@@ -31,6 +31,12 @@ class WinRweAccess(base.BaseAccess):
       raise ValueError("{} must be a non-empty path without whitespace, quotes or ';' (got {!r})".format(setting_name, path))
     return path
 
+  @staticmethod
+  def _copy_unless_same(source, destination):
+    if os.path.exists(destination) and os.path.samefile(source, destination):
+      return
+    shutil.copyfile(source, destination)
+
   def _run_rw(self, command, log_file=None):
     arguments = [self.rw_executable, "/Nologo", "/Min"]
     if log_file:
@@ -65,7 +71,7 @@ class WinRweAccess(base.BaseAccess):
   def mem_save(self, filename, address, size):
     # RW only ever writes to the internal temp path, so `filename` never reaches its command parser.
     self._run_rw("SAVE {} Memory 0x{:x} 0x{:x}".format(self.temp_data_bin, address, size))
-    shutil.copyfile(self.temp_data_bin, filename)
+    self._copy_unless_same(self.temp_data_bin, filename)
 
   def mem_read(self, address, size):
     self._run_rw("SAVE {} Memory 0x{:x} 0x{:x}".format(self.temp_data_bin, address, size))
@@ -84,7 +90,7 @@ class WinRweAccess(base.BaseAccess):
 
   def load_data(self, filename, address):
     # Stage the caller's file through the internal temp path so `filename` never reaches RW's command parser.
-    shutil.copyfile(filename, self.temp_data_bin)
+    self._copy_unless_same(filename, self.temp_data_bin)
     self._run_rw("LOAD {} Memory 0x{:x}".format(self.temp_data_bin, address))
 
   def read_io(self, address, size):
