@@ -1,6 +1,6 @@
 [project]
 name = "xmlcli"
-version = "2.0.6"
+version = "2.0.7"
 description = "UFFAF - UEFI Firmware Foundational Automation Framework (formerly Xml-Cli)"
 authors = [{name = "Gahan Saraya", email = "gahan.saraiya@intel.com"}]
 maintainers = [{name = "Intel", email = "xmlcli@intel.com"}]
