@@ -460,7 +460,12 @@ class UefiParser(object):
         buffer.seek(align_buffer)
       section = structure.section_finder(buffer=buffer, buffer_pointer=align_buffer)  # parse valid section from buffer
       log.debug(section)
-      key = f"0x{align_buffer:x}-{'SEC'}-0x{section.get_section_size():x}"  # construct key to store fv values
+      section_size = section.get_section_size()
+      if section_size == 0:
+        err_msg = f"Encountered zero-length section at 0x{align_buffer:x} in FFS {ffs_guid}"
+        log.error(err_msg)
+        return result
+      key = f"0x{align_buffer:x}-{'SEC'}-0x{section_size:x}"  # construct key to store fv values
       # construct section tuple if valid section type
       section_tuple = structure.FFS_SECTION_TYPE_MAP.get(section.section_type)
       if not section_tuple:
@@ -503,7 +508,7 @@ class UefiParser(object):
               result[key]["FV"] = self.sort_output_fv(result[key]["FV"])
 
       log.debug(f"Aligned buffer: 0x{align_buffer:x}")
-      align_buffer += section.get_section_size()
+      align_buffer += section_size
       log.debug(f"Incremented Aligned buffer: 0x{align_buffer:x}")
       align_buffer = utils.round_up(align_buffer, structure.SECTION_ALIGNMENT)
       log.debug(f"Aligned buffer at 0x{structure.SECTION_ALIGNMENT:x} bytes: 0x{align_buffer:x}")

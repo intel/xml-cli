@@ -3,9 +3,12 @@
 # Built-in imports
 import os
 import sys
+import io
 import shutil
 import warnings
 import unittest
+from types import SimpleNamespace
+from unittest import mock
 
 warnings.simplefilter("ignore", ResourceWarning)
 
@@ -33,6 +36,29 @@ class UtilityTest(UnitTestHelper):
 
 
 class UefiParserTest(UnitTestHelper):
+  def test_zero_length_section_terminates_parsing(self):
+    parser = bios_fw_parser.UefiParser.__new__(bios_fw_parser.UefiParser)
+    parser.parsing_level = SimpleNamespace(level=0)
+    ffs_data = SimpleNamespace(Name=SimpleNamespace(guid="test-guid"), size=0x100)
+    buffer = io.BytesIO(b"\x00" * 8)
+    section_finder = structure.section_finder
+    calls = []
+
+    def find_section_once(buffer, buffer_pointer):
+      calls.append(buffer_pointer)
+      if len(calls) > 1:
+        raise AssertionError("section parser did not advance past a zero-length section")
+      return section_finder(buffer, buffer_pointer)
+
+    with mock.patch.object(bios_fw_parser.utils, "store_buffer"), \
+            mock.patch.object(structure, "section_finder", side_effect=find_section_once), \
+            mock.patch.object(bios_fw_parser.log, "error") as log_error:
+      result = parser.parse_ffs_section(buffer, 0, 8, ffs_data, "FV_FILETYPE_FREEFORM", 0, False)
+
+    self.assertEqual(result, {})
+    self.assertEqual(calls, [0])
+    log_error.assert_called_once_with("Encountered zero-length section at 0x0 in FFS test-guid")
+
   guid_lis1 = [
     # GUIDs available in ADL_FSP_0496_00_D.rom  (may exist in other rom)
     "fc8fe6b5-cd9b-411e-bd8f31824d0cde3d",
