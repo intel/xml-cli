@@ -4,6 +4,7 @@ __author__ = "Gahan Saraiya"
 # Built-in imports
 import os
 import binascii
+import subprocess
 
 # Custom imports
 from ..base import base
@@ -20,6 +21,21 @@ class WinRweAccess(base.BaseAccess):
     self.temp_data_bin = self.config.get(access_name.upper(), "TEMP_DATA_BIN")
     self.result_text = self.config.get(access_name.upper(), "RESULT_TEXT")
 
+  @staticmethod
+  def _validate_path(filename):
+    # RW.exe parses its own /Command string, so separators and quotes must not appear in a path.
+    filename = os.fspath(filename)
+    if any(character in filename for character in ';"\r\n'):
+      raise ValueError("Invalid character in file path: {}".format(filename))
+    return filename
+
+  def _run_rw(self, command, log_file=None):
+    arguments = [self.rw_executable, "/Nologo", "/Min"]
+    if log_file is not None:
+      arguments.append("/LogFile={}".format(self._validate_path(log_file)))
+    arguments.append("/Command={}; RwExit".format(command))
+    return subprocess.run(arguments, shell=False).returncode
+
   def halt_cpu(self, delay=0):
     return 0
 
@@ -33,22 +49,22 @@ class WinRweAccess(base.BaseAccess):
     return 0
 
   def warm_reset(self):
-    os.system('{} /Nologo /Min /Command="O 0xCF9 0x06; RwExit"'.format(self.rw_executable))
+    self._run_rw("O 0xCF9 0x06")
 
   def cold_reset(self):
-    os.system('{} /Nologo /Min /Command="O 0xCF9 0x0E; RwExit"'.format(self.rw_executable))
+    self._run_rw("O 0xCF9 0x0E")
 
   def mem_block(self, address, size):
-    os.system('{} /Nologo /Min /Command="SAVE {} Memory 0x{:x} 0x{:x}; RwExit"'.format(self.rw_executable, self.temp_data_bin, address, size))
+    self.mem_save(self.temp_data_bin, address, size)
     with open(self.temp_data_bin, 'rb') as f:
       data_buffer = f.read()
     return data_buffer
 
   def mem_save(self, filename, address, size):
-    os.system('{} /Nologo /Min /Command="SAVE {} Memory 0x{:x} 0x{:x}; RwExit"'.format(self.rw_executable, filename, address, size))
+    self._run_rw("SAVE {} Memory 0x{:x} 0x{:x}".format(self._validate_path(filename), address, size))
 
   def mem_read(self, address, size):
-    os.system('{} /Nologo /Min /Command="SAVE {} Memory 0x{:x} 0x{:x}; RwExit"'.format(self.rw_executable, self.temp_data_bin, address, size))
+    self.mem_save(self.temp_data_bin, address, size)
     with open(self.temp_data_bin, 'rb') as f:
       data_buffer = f.read()
     return int(binascii.hexlify(data_buffer[0:size][::-1]), 16)
@@ -60,15 +76,15 @@ class WinRweAccess(base.BaseAccess):
         cmd = "W{} 0x{:x} 0x{:x}".format(word_size, address, value)
       else:
         cmd = "W{} 0x{:x} 0x{:x}; W32 0x{:x} 0x{:x}".format(32, address, (value & 0xFFFFFFFF), (address + 4), (value >> 32))
-      os.system('{} /Nologo /Min /Command="{}; RwExit"'.format(self.rw_executable, cmd))
+      self._run_rw(cmd)
 
   def load_data(self, filename, address):
-    os.system('{} /Nologo /Min /Command="LOAD {} Memory 0x{:x}; RwExit"'.format(self.rw_executable, filename, address))
+    self._run_rw("LOAD {} Memory 0x{:x}".format(self._validate_path(filename), address))
 
   def read_io(self, address, size):
     if size in (1, 2, 4):
       cmd = "I{} 0x{:x}".format("" if size == 1 else 8*size, address)
-      os.system('{} /Nologo /Min /LogFile={} /Command="{}; RwExit"'.format(self.rw_executable, self.result_text, cmd))
+      self._run_rw(cmd, log_file=self.result_text)
     with open(self.result_text, 'r') as f:
       result = f.read()
     temp_str = result.split('=')
@@ -80,10 +96,10 @@ class WinRweAccess(base.BaseAccess):
   def write_io(self, address, size, value):
     if size in (1, 2, 4):
       cmd = "O{} 0x{:x} 0x{:x}".format("" if size == 1 else 8*size, address, value)
-      os.system('{} /Nologo /Min /Command="{}; RwExit"'.format(self.rw_executable, cmd))
+      self._run_rw(cmd)
 
   def trigger_smi(self, smi_value):
-    os.system('{} /Nologo /Min /Command="O 0x{:x} 0x{:x}; RwExit"'.format(self.rw_executable, 0xB2, smi_value))
+    self._run_rw("O 0x{:x} 0x{:x}".format(0xB2, smi_value))
 
   def read_msr(self, Ap, address):
     return 0

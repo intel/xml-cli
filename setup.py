@@ -11,7 +11,7 @@ class PostInstall(install):
     if sys.platform.startswith('linux'):  # Just for linux, change the attributes
       for filepath in self.get_outputs():
         if filepath.find("LzmaCompress") > -1 or filepath.find("TianoCompress") > -1 or filepath.find("Brotli") > -1:
-          os.chmod(filepath, 0o777)
+          os.chmod(filepath, 0o755)  # executable, but not world-writable 
 
 
 if __name__ == "__main__":
