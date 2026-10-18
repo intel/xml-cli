@@ -30,6 +30,14 @@ uefi-analyze = "xmlcli.modules.uefi_analyzer.cli:main"
 
 [tool.poetry]
 packages = [{include = "xmlcli", from = "src"}]
+# Include non-Python data files that the package reads at runtime.
+# Poetry's build backend ignores setup.cfg/MANIFEST.in, so these must be
+# listed here to be bundled in the wheel (fixes #97).
+include = [
+    {path = "src/xmlcli/xmlcli.config", format = ["sdist", "wheel"]},
+    {path = "src/xmlcli/messages.json",  format = ["sdist", "wheel"]},
+    {path = "src/xmlcli/cfg/**/*",       format = ["sdist", "wheel"]},
+]
 
 [tool.poetry.group.dev.dependencies]
 tox = ">=3.23.0"
