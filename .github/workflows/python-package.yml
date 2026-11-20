@@ -36,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.11", "3.12", "3.13"]
 
     steps:
     - uses: actions/checkout@v7
@@ -46,7 +46,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - uses: abatilo/actions-poetry@v4
       with:
-        poetry-version: 1.4.0
+        poetry-version: latest
     - name: Install dependencies
       run: |
         poetry install --with dev
